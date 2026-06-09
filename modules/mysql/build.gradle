@@ -7,7 +7,7 @@ description = 'preinit-testcontainers :: MySQL'
 
 dependencies {
 	api project(':preinit-testcontainers-jdbc')
-	configureTestcontainersApi(delegate, 'org.testcontainers:testcontainers-mysql')
+	configureTestcontainersApi(delegate, 'org.testcontainers:mysql')
 
 	testImplementation libs.mysql.connector.j
 }

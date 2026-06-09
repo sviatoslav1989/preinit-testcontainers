@@ -1,4 +1,4 @@
-version = '2.0.0-SNAPSHOT'
+version = '1.0.0-SNAPSHOT'
 
 subprojects {
     apply plugin: 'java-library'
@@ -7,12 +7,12 @@ subprojects {
 
     def tcBomVersion = libs.versions.testcontainersBom
 
-    ext.testcontainers2xVersionRange = '[2.0.0,3.0.0)'
+    ext.testcontainersVersionRange = '[1.20.0,2.0.0)'
 
     ext.configureTestcontainersApi = { DependencyHandler handler, String notation ->
         handler.api(notation) {
             version {
-                require testcontainers2xVersionRange
+                require testcontainersVersionRange
                 prefer tcBomVersion.get()
             }
         }

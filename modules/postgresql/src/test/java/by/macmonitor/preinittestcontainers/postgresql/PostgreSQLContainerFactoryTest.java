@@ -17,8 +17,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.lang.reflect.Field;
@@ -286,10 +286,10 @@ class PostgreSQLContainerFactoryTest {
                 .withCmdParameters(cmdParameters);
     }
 
-    private PostgreSQLContainer createVanillaPostgreSQLContainer(
+    private PostgreSQLContainer<?> createVanillaPostgreSQLContainer(
             List<String> initScripts, boolean withTmpfs) {
-        PostgreSQLContainer container =
-                new PostgreSQLContainer(DockerImageName.parse("postgres:17"));
+        PostgreSQLContainer<?> container =
+                new PostgreSQLContainer<>(DockerImageName.parse("postgres:17"));
         container.withDatabaseName("testdb").withUsername("user").withPassword("password");
         if (!initScripts.isEmpty()) {
             container.withInitScripts(initScripts.toArray(new String[0]));
@@ -390,21 +390,21 @@ class PostgreSQLContainerFactoryTest {
 
     @SuperBuilder(toBuilder = true, setterPrefix = "with")
     private static final class ExposingPostgreSQLContainerFactory
-            extends JdbcContainerFactory<CreatePostgreSQLContainerCommand, PostgreSQLContainer> {
+            extends JdbcContainerFactory<CreatePostgreSQLContainerCommand, PostgreSQLContainer<?>> {
 
         private static final ExposingPostgreSQLContainerFactory INSTANCE =
                 ExposingPostgreSQLContainerFactory.builder().build();
 
         @Builder.Default
-        private final Function<DockerImageName, PostgreSQLContainer> containerSupplier =
+        private final Function<DockerImageName, PostgreSQLContainer<?>> containerSupplier =
                 PostgreSQLContainer::new;
 
         @Override
-        protected Function<DockerImageName, PostgreSQLContainer> resolveContainerSupplier() {
+        protected Function<DockerImageName, PostgreSQLContainer<?>> resolveContainerSupplier() {
             return containerSupplier;
         }
 
-        void apply(PostgreSQLContainer container, CreatePostgreSQLContainerCommand command) {
+        void apply(PostgreSQLContainer<?> container, CreatePostgreSQLContainerCommand command) {
             applyCommandProperties(container, command, false);
         }
     }

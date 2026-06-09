@@ -9,7 +9,7 @@ import com.github.dockerjava.api.DockerClient;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.Connection;
@@ -209,9 +209,9 @@ class MySQLContainerFactoryTest {
                 .withCmdParameters(cmdParameters);
     }
 
-    private MySQLContainer createVanillaMySQLContainer(
+    private MySQLContainer<?> createVanillaMySQLContainer(
             List<String> initScripts, boolean withTmpfs) {
-        MySQLContainer container = new MySQLContainer(DockerImageName.parse("mysql:8.0.45"));
+        MySQLContainer<?> container = new MySQLContainer<>(DockerImageName.parse("mysql:8.0.45"));
         container.withDatabaseName("testdb").withUsername("user").withPassword("password");
         if (!initScripts.isEmpty()) {
             container.withInitScripts(initScripts.toArray(new String[0]));

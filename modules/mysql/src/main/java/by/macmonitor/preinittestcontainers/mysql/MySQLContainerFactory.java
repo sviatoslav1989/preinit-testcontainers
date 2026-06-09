@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.function.Function;
@@ -15,19 +15,20 @@ import java.util.function.Function;
 @SuperBuilder(toBuilder = true, setterPrefix = "with")
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class MySQLContainerFactory
-        extends JdbcContainerFactory<CreateMySQLContainerCommand, MySQLContainer> {
+        extends JdbcContainerFactory<CreateMySQLContainerCommand, MySQLContainer<?>> {
 
     private static final MySQLContainerFactory INSTANCE = new MySQLContainerFactory();
 
     @Builder.Default
-    private final Function<DockerImageName, MySQLContainer> containerSupplier = MySQLContainer::new;
+    private final Function<DockerImageName, MySQLContainer<?>> containerSupplier =
+            MySQLContainer::new;
 
     @Override
-    protected Function<DockerImageName, MySQLContainer> resolveContainerSupplier() {
+    protected Function<DockerImageName, MySQLContainer<?>> resolveContainerSupplier() {
         return containerSupplier;
     }
 
-    public static MySQLContainer createMySQLContainer(CreateMySQLContainerCommand command) {
+    public static MySQLContainer<?> createMySQLContainer(CreateMySQLContainerCommand command) {
         return INSTANCE.create(command);
     }
 }

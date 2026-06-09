@@ -10,12 +10,12 @@ version = rootProject.version
 def tcBomVersion = providers.gradleProperty('testcontainersBomVersion')
     .orElse(libs.versions.testcontainersBom)
 
-ext.testcontainers2xVersionRange = '[2.0.0,3.0.0)'
+ext.testcontainersVersionRange = '[1.20.0,2.0.0)'
 
 ext.configureTestcontainersApi = { DependencyHandler handler, String notation ->
     handler.api(notation) {
         version {
-            require testcontainers2xVersionRange
+            require testcontainersVersionRange
             prefer tcBomVersion.get()
         }
     }

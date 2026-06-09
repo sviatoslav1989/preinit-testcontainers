@@ -7,5 +7,5 @@ description = 'preinit-testcontainers :: JDBC'
 
 dependencies {
 	api project(':preinit-testcontainers')
-	configureTestcontainersApi(delegate, 'org.testcontainers:testcontainers-jdbc')
+	configureTestcontainersApi(delegate, 'org.testcontainers:jdbc')
 }

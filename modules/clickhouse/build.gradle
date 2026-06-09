@@ -7,7 +7,7 @@ description = 'preinit-testcontainers :: ClickHouse'
 
 dependencies {
 	api project(':preinit-testcontainers-jdbc')
-	configureTestcontainersApi(delegate, 'org.testcontainers:testcontainers-clickhouse')
+	configureTestcontainersApi(delegate, 'org.testcontainers:clickhouse')
 
 	testImplementation libs.clickhouse.jdbc
 }
