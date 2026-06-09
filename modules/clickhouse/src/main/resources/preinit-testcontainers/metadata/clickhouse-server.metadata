@@ -1,0 +1,5 @@
+record.0.startVersion=19.17
+record.0.endVersion=26.9
+record.0.entrypointPath=/entrypoint.sh
+record.0.entrypoint=/entrypoint.sh
+record.0.volumes=/var/lib/clickhouse

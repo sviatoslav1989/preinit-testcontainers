@@ -1,0 +1,57 @@
+version = '2.0.0-SNAPSHOT'
+
+subprojects {
+    apply plugin: 'java-library'
+
+    group = 'by.macmonitor.examples'
+
+    def tcBomVersion = libs.versions.testcontainersBom
+
+    ext.testcontainers2xVersionRange = '[2.0.0,3.0.0)'
+
+    ext.configureTestcontainersApi = { DependencyHandler handler, String notation ->
+        handler.api(notation) {
+            version {
+                require testcontainers2xVersionRange
+                prefer tcBomVersion.get()
+            }
+        }
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+
+    dependencies {
+        compileOnly platform(libs.testcontainers.bom)
+        testImplementation platform(libs.testcontainers.bom)
+
+        compileOnly libs.lombok
+        annotationProcessor libs.lombok
+
+        testImplementation platform(libs.junit.bom)
+        testImplementation libs.junit.jupiter
+        testImplementation libs.assertj.core
+        testImplementation libs.testcontainers.junit.jupiter
+        testImplementation libs.slf4j.simple
+        testCompileOnly libs.lombok
+        testAnnotationProcessor libs.lombok
+        testRuntimeOnly libs.junit.platform.launcher
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+        testLogging {
+            showStandardStreams = true
+            showExceptions = true
+            showStackTraces = true
+            exceptionFormat = 'full'
+        }
+    }
+}

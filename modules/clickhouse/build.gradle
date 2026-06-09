@@ -1,0 +1,13 @@
+plugins {
+	id 'preinit.testcontainers.java-library'
+	id 'preinit.testcontainers.publishing'
+}
+
+description = 'preinit-testcontainers :: ClickHouse'
+
+dependencies {
+	api project(':preinit-testcontainers-jdbc')
+	configureTestcontainersApi(delegate, 'org.testcontainers:testcontainers-clickhouse')
+
+	testImplementation libs.clickhouse.jdbc
+}

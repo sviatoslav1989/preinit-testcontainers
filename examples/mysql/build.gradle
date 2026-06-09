@@ -1,0 +1,7 @@
+description = 'example :: preinit-testcontainers-mysql (Maven Central consumer)'
+
+dependencies {
+	implementation "by.macmonitor:preinit-testcontainers-mysql:${rootProject.version}"
+
+	testImplementation libs.mysql.connector.j
+}

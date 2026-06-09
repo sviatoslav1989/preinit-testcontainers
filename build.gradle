@@ -1,0 +1,32 @@
+plugins {
+    alias(libs.plugins.spotless)
+}
+
+group = 'by.macmonitor'
+version = '2.0.0-SNAPSHOT'
+
+spotlessPredeclare {
+    java {
+        importOrder('', 'java', 'javax', '\\#')
+        removeUnusedImports()
+        eclipse()
+            .sortMembersEnabled(true)
+            .sortMembersOrder('SF,F,SI,I,C,M,SM,T')
+            .sortMembersDoNotSortFields(true)
+            .sortMembersVisibilityOrderEnabled(true)
+            .sortMembersVisibilityOrder('B,R,D,V')
+        palantirJavaFormat(libs.versions.palantirJavaFormat.get()).style('AOSP').formatJavadoc(true)
+        formatAnnotations()
+    }
+    format 'misc', {
+        target '*.gradle', 'gradle/*.gradle', '.gitattributes', '.gitignore'
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    groovyGradle {
+        target '*.gradle', 'gradle/*.gradle'
+        greclipse()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}

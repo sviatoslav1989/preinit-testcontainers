@@ -1,0 +1,50 @@
+{
+    "name": "preinit-testcontainers",
+    "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+    "runArgs": ["--network", "host"],
+    "mounts": [
+        "source=preinit-testcontainers-gradle-cache,target=${containerWorkspaceFolder}/.gradle,type=volume"
+    ],
+    "features": {
+        "ghcr.io/devcontainers/features/java:1": {
+            "version": "21",
+            "jdkDistro": "amzn",
+            "installGradle": false
+        },
+        "ghcr.io/devcontainers/features/rust:1": {
+            "version": "latest",
+            "profile": "default"
+        },
+        "ghcr.io/devcontainers/features/python:1": {
+            "version": "3.12"
+        },
+        "ghcr.io/devcontainers/features/git:1": {
+            "version": "latest",
+            "ppa": false
+        },
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+            "version": "latest",
+            "moby": true,
+            "dockerDashComposeVersion": "v2"
+        }
+    },
+    "postCreateCommand": "bash .devcontainer/setup.sh",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "vscjava.vscode-java-pack"
+            ],
+            "settings": {
+                "java.import.gradle.enabled": true,
+                "java.import.gradle.wrapper.enabled": true,
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "remote.autoForwardPorts": false
+            }
+        }
+    },
+    "hostRequirements": {
+        "cpus": 1,
+        "memory": "4gb",
+        "storage": "10gb"
+    }
+}

@@ -1,0 +1,12 @@
+plugins {
+	id 'preinit.testcontainers.java-library'
+	id 'preinit.testcontainers.publishing'
+}
+
+description = 'preinit-testcontainers :: Redis'
+
+dependencies {
+	api project(':preinit-testcontainers')
+	// Community artifact; not in the official Testcontainers BOM.
+	api libs.testcontainers.redis
+}

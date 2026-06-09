@@ -1,0 +1,22 @@
+[versions]
+assertj = "3.27.4"
+testcontainersBom = "2.0.5"
+lombok = "1.18.44"
+junitBom = "5.14.3"
+mysqlConnector = "9.6.0"
+postgresqlJdbc = "42.7.5"
+clickhouseJdbc = "0.9.8"
+slf4j = "2.0.17"
+
+[libraries]
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainersBom" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }
+mysql-connector-j = { module = "com.mysql:mysql-connector-j", version.ref = "mysqlConnector" }
+postgresql-jdbc = { module = "org.postgresql:postgresql", version.ref = "postgresqlJdbc" }
+clickhouse-jdbc = { module = "com.clickhouse:clickhouse-jdbc", version.ref = "clickhouseJdbc" }

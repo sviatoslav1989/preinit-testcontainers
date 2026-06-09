@@ -1,0 +1,5 @@
+description = 'example :: preinit-testcontainers-redis (Maven Central consumer)'
+
+dependencies {
+	implementation "by.macmonitor:preinit-testcontainers-redis:${rootProject.version}"
+}

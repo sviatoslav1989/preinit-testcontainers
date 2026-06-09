@@ -1,0 +1,5 @@
+description = 'example :: preinit-testcontainers-jdbc (Maven Central consumer)'
+
+dependencies {
+	implementation "by.macmonitor:preinit-testcontainers-jdbc:${rootProject.version}"
+}

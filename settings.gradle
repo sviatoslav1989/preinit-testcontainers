@@ -1,0 +1,24 @@
+pluginManagement {
+    includeBuild('build-logic')
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'preinit-testcontainers'
+
+include 'preinit-testcontainers'
+project(':preinit-testcontainers').projectDir = "$rootDir/core" as File
+
+file('modules').eachDir { dir ->
+    include "preinit-testcontainers-${dir.name}"
+    project(":preinit-testcontainers-${dir.name}").projectDir = dir
+}

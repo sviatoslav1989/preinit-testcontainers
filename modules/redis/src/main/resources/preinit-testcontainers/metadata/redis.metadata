@@ -1,0 +1,13 @@
+record.0.startVersion=2.6
+record.0.endVersion=3.1
+record.0.entrypointPath=/entrypoint.sh
+record.0.entrypoint=/entrypoint.sh
+record.0.cmd=redis-server
+record.0.volumes=/data
+
+record.1.startVersion=3.2
+record.1.endVersion=7.9
+record.1.entrypointPath=/usr/local/bin/docker-entrypoint.sh
+record.1.entrypoint=docker-entrypoint.sh
+record.1.cmd=redis-server
+record.1.volumes=/data

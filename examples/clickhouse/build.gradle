@@ -1,0 +1,7 @@
+description = 'example :: preinit-testcontainers-clickhouse (Maven Central consumer)'
+
+dependencies {
+	implementation "by.macmonitor:preinit-testcontainers-clickhouse:${rootProject.version}"
+
+	testImplementation libs.clickhouse.jdbc
+}

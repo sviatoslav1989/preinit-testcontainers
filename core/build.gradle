@@ -1,0 +1,15 @@
+plugins {
+	id 'preinit.testcontainers.java-library'
+	id 'preinit.testcontainers.publishing'
+}
+
+description = 'preinit-testcontainers'
+
+dependencies {
+	configureTestcontainersApi(delegate, 'org.testcontainers:testcontainers')
+
+	testImplementation project(':preinit-testcontainers-mysql')
+	testImplementation project(':preinit-testcontainers-postgresql')
+	testImplementation project(':preinit-testcontainers-clickhouse')
+	testImplementation project(':preinit-testcontainers-redis')
+}

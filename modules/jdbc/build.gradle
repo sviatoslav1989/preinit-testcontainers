@@ -1,0 +1,11 @@
+plugins {
+	id 'preinit.testcontainers.java-library'
+	id 'preinit.testcontainers.publishing'
+}
+
+description = 'preinit-testcontainers :: JDBC'
+
+dependencies {
+	api project(':preinit-testcontainers')
+	configureTestcontainersApi(delegate, 'org.testcontainers:testcontainers-jdbc')
+}

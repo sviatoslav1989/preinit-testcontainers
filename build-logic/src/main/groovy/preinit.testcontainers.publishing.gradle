@@ -1,0 +1,38 @@
+plugins {
+    id 'com.vanniktech.maven.publish'
+}
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+
+    pom {
+        name = project.name
+        description = project.description
+        inceptionYear = '2026'
+        url = 'https://github.com/sviatoslav1989/preinit-container'
+        licenses {
+            license {
+                name = 'MIT License'
+                url = 'https://opensource.org/licenses/MIT'
+                distribution = 'repo'
+            }
+        }
+        developers {
+            developer {
+                id = 'sviatoslav1989'
+                name = 'Sviataslau Apanasionak'
+                email = 'sviato_slav1989@protonmail.com'
+            }
+        }
+        scm {
+            url = 'https://github.com/sviatoslav1989/preinit-container'
+            connection = 'scm:git:git://github.com/sviatoslav1989/preinit-container.git'
+            developerConnection = 'scm:git:ssh://git@github.com/sviatoslav1989/preinit-container.git'
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+}

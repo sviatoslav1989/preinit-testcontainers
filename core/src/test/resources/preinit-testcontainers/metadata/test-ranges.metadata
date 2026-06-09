@@ -1,0 +1,13 @@
+record.0.startVersion=1.0
+record.0.endVersion=1.9
+record.0.entrypointPath=/old/entrypoint.sh
+record.0.entrypoint=old-entrypoint
+record.0.cmd=old-cmd
+record.0.volumes=/old/data
+
+record.1.startVersion=2.0
+record.1.endVersion=2.9
+record.1.entrypointPath=/new/entrypoint.sh
+record.1.entrypoint=new-entrypoint
+record.1.cmd=new-cmd
+record.1.volumes=/new/data
