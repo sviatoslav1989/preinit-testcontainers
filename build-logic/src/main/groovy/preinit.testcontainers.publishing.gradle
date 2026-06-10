@@ -37,13 +37,63 @@ signing {
     useGpgCmd()
 }
 
+def delombokTask = tasks.named('delombok')
+def compileJavaTask = tasks.named('compileJava', JavaCompile)
+def jarTask = tasks.named('jar', Jar)
+
+def compilePublishedJava = tasks.register('compilePublishedJava', JavaCompile) {
+    dependsOn delombokTask
+    source = delombokTask.flatMap { it.target }
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('classes/java/published')
+    options.encoding = 'UTF-8'
+    options.release.set(8)
+    options.compilerArgs.add('-proc:none')
+    javaCompiler = compileJavaTask.flatMap { it.javaCompiler }
+}
+
+def publishedJar = tasks.register('publishedJar', Jar) {
+    dependsOn compilePublishedJava, tasks.named('processResources')
+    archiveClassifier = ''
+    archiveBaseName = jarTask.flatMap { it.archiveBaseName }
+    archiveVersion = jarTask.flatMap { it.archiveVersion }
+    from(compilePublishedJava.flatMap { it.destinationDirectory })
+    from(layout.buildDirectory.dir('resources/main'))
+}
+
 afterEvaluate {
     tasks.named('sourcesJar', Jar) {
-        dependsOn tasks.named('delombok')
+        dependsOn delombokTask
         exclude { detail ->
             project.extensions.getByType(JavaPluginExtension)
                 .sourceSets.main.allSource.contains(detail.file)
         }
-        from(tasks.named('delombok'))
+        from(delombokTask)
+    }
+
+    publishing {
+        publications {
+            withType(MavenPublication).configureEach { publication ->
+                def mainJar = publication.artifacts.find { artifact ->
+                    artifact.classifier == null && artifact.extension == 'jar'
+                }
+                if (mainJar != null) {
+                    publication.artifacts.remove(mainJar)
+                }
+                publication.artifact(publishedJar)
+            }
+        }
+    }
+
+    tasks.withType(PublishToMavenRepository).configureEach {
+        dependsOn publishedJar
+    }
+
+    tasks.matching { it.name in ['publishToMavenCentral', 'publishAndReleaseToMavenCentral', 'publishToMavenLocal'] }.configureEach {
+        dependsOn publishedJar
+    }
+
+    tasks.named('generateMetadataFileForMavenPublication').configure {
+        dependsOn publishedJar
     }
 }
