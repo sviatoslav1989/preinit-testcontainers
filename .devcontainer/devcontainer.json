@@ -4,6 +4,7 @@
     "runArgs": ["--network", "host"],
     "mounts": [
         "source=preinit-testcontainers-gradle-cache,target=${containerWorkspaceFolder}/.gradle,type=volume",
+        "source=preinit-testcontainers-examples-gradle-cache,target=${containerWorkspaceFolder}/examples/.gradle,type=volume",
         "source=${localWorkspaceFolder}/../testcontainers-java,target=${containerWorkspaceFolder}/../testcontainers-java,type=bind,readonly"
     ],
     "features": {
