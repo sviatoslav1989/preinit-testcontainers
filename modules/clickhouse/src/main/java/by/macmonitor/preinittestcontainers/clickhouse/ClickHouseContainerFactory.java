@@ -12,6 +12,10 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.function.Function;
 
+/**
+ * {@link by.macmonitor.preinittestcontainers.ContainerFactory} for ClickHouse via
+ * {@link org.testcontainers.clickhouse.ClickHouseContainer}.
+ */
 @SuperBuilder(toBuilder = true, setterPrefix = "with")
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class ClickHouseContainerFactory

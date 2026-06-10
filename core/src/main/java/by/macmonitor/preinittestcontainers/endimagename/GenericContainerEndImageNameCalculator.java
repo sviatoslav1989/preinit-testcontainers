@@ -18,6 +18,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
+/**
+ * Default {@link ContainerEndImageNameCalculator} for {@link CreateGenericContainerCommand}.
+ *
+ * <p>Hashes classpath file contents (mappings, entrypoint script) plus string parameters (env,
+ * labels, callback keys, and so on) into an MD5 digest, then forms
+ * {@code prefix-baseImage.first8hex}. Subclasses override {@link #stringParameters},
+ * {@link #fileParameters}, or {@link #imageNamePrefix} for module-specific inputs.
+ */
 @Slf4j
 public class GenericContainerEndImageNameCalculator<C extends CreateGenericContainerCommand>
         implements ContainerEndImageNameCalculator<C> {

@@ -16,10 +16,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+/**
+ * Log-based {@link org.testcontainers.containers.wait.strategy.WaitStrategy} for PostgreSQL that
+ * handles both first-time initialization and restarts from a pre-initialized image.
+ *
+ * <p>Official PostgreSQL images log {@code database system is ready to accept connections} twice on
+ * a cold start (shutdown checkpoint, then final ready). Pre-initialized containers often log
+ * {@code Skipping initialization} and emit only one ready line because the data directory already
+ * exists. Stock Testcontainers wait logic does not account for that shorter sequence, which can
+ * cause timeouts when reusing committed images.
+ *
+ * <p>Rules: if {@code Skipping initialization} was seen, one ready line is enough; otherwise two
+ * ready lines are required. Default instance with a 60s timeout is
+ * {@link CreatePostgreSQLContainerCommand#DEFAULT_WAIT_STRATEGY}.
+ */
 public final class PostgreSQLContainerWaitStrategy extends AbstractWaitStrategy {
 
+    /** Matches the official image log line when entrypoint skips init scripts. */
     private static final String SKIP_INIT_REGEX = ".*Skipping initialization.*";
 
+    /** Matches PostgreSQL's {@code database system is ready to accept connections} log line. */
     private static final String READY_REGEX =
             ".*database system is ready to accept connections.*\\s";
 

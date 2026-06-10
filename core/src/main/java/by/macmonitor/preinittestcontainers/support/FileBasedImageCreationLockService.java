@@ -1,5 +1,6 @@
 package by.macmonitor.preinittestcontainers.support;
 
+import by.macmonitor.preinittestcontainers.GenericContainerFactory;
 import by.macmonitor.preinittestcontainers.ImageCreationLockOption;
 import by.macmonitor.preinittestcontainers.ImageCreationLockService;
 
@@ -18,6 +19,14 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.util.function.Consumer;
 
+/**
+ * Cross-process file lock under {@code ${java.io.tmpdir}/.testcontainers-locks}, keyed by MD5 of
+ * the target image name.
+ *
+ * <p>Default {@link ImageCreationLockService} used by {@link GenericContainerFactory}. Stale lock
+ * files older than {@link ImageCreationLockOption#getLockStaleTimeout()} are removed before
+ * acquisition; acquisition fails after {@link ImageCreationLockOption#getLockAcquireTimeout()}.
+ */
 @Slf4j
 public class FileBasedImageCreationLockService implements ImageCreationLockService {
 

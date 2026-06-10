@@ -45,6 +45,15 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Default {@link ContainerFactory} implementation that wires pre-initialized image build (metadata
+ * resolution, end-image naming, locking, and optional {@link PreInitStartCallback}) with standard
+ * Testcontainers configuration.
+ *
+ * <p>Module factories extend this class to supply container suppliers and specialized
+ * {@link ContainerEndImageNameCalculator} instances. Use
+ * {@link #createGenericContainer(CreateGenericContainerCommand)} for generic images.
+ */
 @Slf4j
 @SuperBuilder(toBuilder = true, setterPrefix = "with")
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
@@ -52,9 +61,10 @@ public class GenericContainerFactory<
                 C extends CreateGenericContainerCommand, T extends GenericContainer<?>>
         implements ContainerFactory<C, T> {
 
-    // Classpath entrypoint script copied into containers for persist/snapshot flow
+    /** Classpath resource for the wrapper entrypoint copied into pre-initialized containers. */
     protected static final String ENTRYPOINT_CLASS_PATH = "docker/testcontainer-entrypoint.sh";
 
+    /** In-container path where {@link #ENTRYPOINT_CLASS_PATH} is installed. */
     protected static final String ENTRYPOINT_FILE_NAME = "/testcontainer-entrypoint.sh";
 
     // Env vars consumed by testcontainer-entrypoint.sh (unit-tested via static
@@ -72,9 +82,11 @@ public class GenericContainerFactory<
     private static final GenericContainerFactory<CreateGenericContainerCommand, GenericContainer<?>>
             DEFAULT = new GenericContainerFactory<>();
 
+    /** Docker client used for image inspect, commit, and existence checks. Injectable for tests. */
     @Builder.Default
     protected final DockerClient dockerClient = DockerClientFactory.lazyClient();
 
+    /** Lock service coordinating parallel pre-initialized image builds. Injectable for tests. */
     @Builder.Default
     protected final ImageCreationLockService imageCreationLockService =
             new FileBasedImageCreationLockService();
@@ -106,6 +118,20 @@ public class GenericContainerFactory<
         return createPreinitialized(command, baseImage);
     }
 
+    /**
+     * Applies all {@link CreateContainerCommand} settings to a Testcontainers container.
+     *
+     * <p>Module factories override this to add database- or image-specific configuration after
+     * {@code super.applyCommandProperties(...)}. When {@code imageBuild} is {@code true}, the
+     * container is the temporary instance used during pre-initialized image commit (reuse is not
+     * applied; JDBC init scripts are applied in {@code JdbcContainerFactory}). When {@code false},
+     * the container is returned to the caller for test runtime.
+     *
+     * @param container target container, already constructed with the resolved image name
+     * @param command immutable creation command
+     * @param imageBuild {@code true} during {@link #buildPreinitializedImage}, {@code false}
+     *     otherwise
+     */
     protected void applyCommandProperties(T container, C command, boolean imageBuild) {
         ContainerMetadata metadata = resolveMetadata(command);
         if (!imageBuild) {
@@ -231,6 +257,20 @@ public class GenericContainerFactory<
         }
     }
 
+    /**
+     * Installs the pre-init wrapper entrypoint and persist-related environment variables.
+     *
+     * <p>Sets {@link #ENTRYPOINT_FILE_NAME} as the container entrypoint and populates {@code TCE_*}
+     * env vars consumed by that script (tmpfs live/snapshot paths, upstream entrypoint argv,
+     * temp-build mode). Called on the temp container during image commit
+     * ({@code tempBuildFlow=true}) and again on the runtime container so the same wrapper runs at
+     * test time ({@code tempBuildFlow=false}).
+     *
+     * @param container container that already has {@link #ENTRYPOINT_CLASS_PATH} copied in
+     * @param command creation command
+     * @param tempBuildFlow {@code true} while building the committed image, {@code false} at
+     *     runtime
+     */
     protected final void applyPersistEntrypoint(T container, C command, boolean tempBuildFlow) {
         ContainerMetadata metadata = resolveMetadata(command);
         container.withEnv(buildPersistEnv(command, metadata, tempBuildFlow));
@@ -239,14 +279,43 @@ public class GenericContainerFactory<
         container.withCreateContainerCmdModifier(c -> c.withEntrypoint(entrypoint));
     }
 
+    /**
+     * Constructs a new container instance for the given image name.
+     *
+     * <p>Delegates to {@link #resolveContainerSupplier()}; module factories override the supplier
+     * rather than this method.
+     *
+     * @param imageName Docker image name (base or pre-initialized end image)
+     * @return new, not-yet-started container
+     */
     protected T newContainer(DockerImageName imageName) {
         return resolveContainerSupplier().apply(imageName);
     }
 
+    /**
+     * Supplies the Testcontainers container constructor for this factory.
+     *
+     * <p>Default is {@link GenericContainer#GenericContainer(DockerImageName)}. Database modules
+     * override to return {@code MySQLContainer::new}, {@code PostgreSQLContainer::new}, and so on.
+     * Injectable via the Lombok builder for tests.
+     *
+     * @return function that constructs {@code T} for a resolved image name
+     */
     protected Function<DockerImageName, T> resolveContainerSupplier() {
         return containerSupplier;
     }
 
+    /**
+     * Resolves tmpfs mounts used for data persistence and entrypoint env wiring.
+     *
+     * <p>Explicit {@link CreateContainerCommand#getTmpFsFilesystems()} on the command wins;
+     * otherwise bundled {@link ContainerMetadata#getTmpFs()} from {@link #resolveMetadata} is used.
+     * Only mounts marked {@link TmpFsSystemCommand#isNeedPersist()} contribute to persist env vars.
+     *
+     * @param command creation command
+     * @param metadata resolved upstream image metadata (may be {@code null})
+     * @return effective tmpfs list, never {@code null}
+     */
     protected final List<TmpFsSystemCommand> resolveEffectiveTmpFsFilesystems(
             C command, ContainerMetadata metadata) {
         List<TmpFsSystemCommand> explicit = command.getTmpFsFilesystems();
@@ -259,10 +328,32 @@ public class GenericContainerFactory<
         return Collections.emptyList();
     }
 
+    /**
+     * Calculator used when {@link CreateContainerCommand#getEndImageName()} is unset and
+     * {@link CreateContainerCommand#isPreInitialized()} is {@code true}.
+     *
+     * <p>Default is {@link GenericContainerEndImageNameCalculator#INSTANCE}. Module factories
+     * override to include database credentials, Redis password, and other module-specific hash
+     * inputs. Injectable via the Lombok builder.
+     *
+     * @return calculator that derives the committed image {@code repository:tag}
+     */
     protected ContainerEndImageNameCalculator<C> resolveEndImageNameCalculator() {
         return endImageNameCalculator;
     }
 
+    /**
+     * Resolves upstream image metadata needed to wrap entrypoint/cmd and tmpfs defaults.
+     *
+     * <p>Order: explicit {@link CreateContainerCommand#getMetadata()} on the command, then
+     * {@link ContainerMetadataRegistry#find(String)} for bundled {@code .metadata} files, then
+     * {@link DockerImageMetadataInspector#inspect(String)} as a live Docker fallback.
+     *
+     * @param command creation command (must have non-null
+     *     {@link CreateContainerCommand#getBaseImageName()} when metadata is not set on the
+     *     command)
+     * @return resolved metadata, never {@code null} when a base image is configured
+     */
     protected final ContainerMetadata resolveMetadata(C command) {
         if (command.getMetadata() != null) {
             return command.getMetadata();
@@ -304,6 +395,30 @@ public class GenericContainerFactory<
         return Collections.unmodifiableList(new ArrayList<>(cmd));
     }
 
+    /**
+     * Builds and commits a pre-initialized Docker image from a short-lived temporary container.
+     *
+     * <p>Invoked from {@link #createPreinitialized} when the resolved end image is not present
+     * locally (optionally under {@link ImageCreationLockService} when
+     * {@link CreateContainerCommand#isImageCreationLock()} is enabled). Steps:
+     *
+     * <ol>
+     *   <li>Start a temp container from {@code baseImage} and apply command properties with
+     *       {@code imageBuild=true} (see {@link #applyCommandProperties})
+     *   <li>Copy {@link #ENTRYPOINT_CLASS_PATH} into the container and call
+     *       {@link #applyPersistEntrypoint} with {@code tempBuildFlow=true}
+     *   <li>Start the container so tmpfs and env are live, then run {@link PreInitStartCallback} if
+     *       configured
+     *   <li>{@link #commitAndRelabelPreinitializedImage} to produce {@code finalImageName}
+     * </ol>
+     *
+     * The temp container is always closed in a {@code finally} block; callers use the committed
+     * image on subsequent {@code create} calls.
+     *
+     * @param command creation command driving configuration and optional callback
+     * @param baseImage upstream Docker image to build from
+     * @param finalImageName committed image name ({@code repository:tag}) to create locally
+     */
     private void buildPreinitializedImage(C command, String baseImage, String finalImageName) {
         T tempContainer = newContainer(DockerImageName.parse(baseImage));
         applyCommandProperties(tempContainer, command, true);

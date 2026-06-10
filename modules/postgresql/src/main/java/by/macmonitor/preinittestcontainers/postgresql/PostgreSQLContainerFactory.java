@@ -12,6 +12,10 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.function.Function;
 
+/**
+ * {@link by.macmonitor.preinittestcontainers.ContainerFactory} for PostgreSQL via
+ * {@link org.testcontainers.postgresql.PostgreSQLContainer}.
+ */
 @SuperBuilder(toBuilder = true, setterPrefix = "with")
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class PostgreSQLContainerFactory

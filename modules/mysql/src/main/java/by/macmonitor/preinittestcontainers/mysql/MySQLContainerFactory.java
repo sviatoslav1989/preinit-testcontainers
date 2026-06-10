@@ -12,6 +12,10 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.function.Function;
 
+/**
+ * {@link by.macmonitor.preinittestcontainers.ContainerFactory} for MySQL via
+ * {@link org.testcontainers.mysql.MySQLContainer}.
+ */
 @SuperBuilder(toBuilder = true, setterPrefix = "with")
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class MySQLContainerFactory
