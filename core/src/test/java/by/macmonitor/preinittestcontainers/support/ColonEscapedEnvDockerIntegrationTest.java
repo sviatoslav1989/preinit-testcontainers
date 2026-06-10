@@ -1,7 +1,5 @@
 package by.macmonitor.preinittestcontainers.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -49,7 +47,7 @@ class ColonEscapedEnvDockerIntegrationTest {
                     TCE_UPSTREAM_ENTRYPOINT,
                     encodedUpstream));
             TimedContainerStart.start(container);
-            assertThat(container.getLogs()).contains("OK");
+            ContainerLogAssertions.assertContains(container, "OK");
         }
     }
 
@@ -66,7 +64,7 @@ class ColonEscapedEnvDockerIntegrationTest {
                     TCE_UPSTREAM_ENTRYPOINT,
                     encodedUpstream));
             TimedContainerStart.start(container);
-            assertThat(container.getLogs()).contains("hi:there");
+            ContainerLogAssertions.assertContains(container, "hi:there");
         }
     }
 

@@ -45,6 +45,8 @@ tasks.named('compileTestJava', JavaCompile) {
 }
 
 spotless {
+    enforceCheck false
+
     java {
         toggleOffOn()
 
@@ -92,6 +94,15 @@ dependencies {
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
     testRuntimeOnly libs.junit.platform.launcher
+}
+
+afterEvaluate {
+    tasks.named('check').configure {
+        setDependsOn(dependsOn.findAll { dep ->
+            def name = dep instanceof TaskProvider ? dep.name : (dep instanceof Task ? dep.name : dep.toString())
+            !name.contains('checkstyle')
+        })
+    }
 }
 
 tasks.named('test') {

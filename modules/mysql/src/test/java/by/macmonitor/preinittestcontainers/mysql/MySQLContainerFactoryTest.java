@@ -24,15 +24,7 @@ import javax.sql.DataSource;
 
 class MySQLContainerFactoryTest {
 
-    private final List<String> cmdParameters = List.of(
-            "--character-set-server=utf8",
-            "--collation-server=utf8_general_ci",
-            "--max_connections=150",
-            "--innodb-buffer-pool-size=128M",
-            "--innodb-doublewrite=0",
-            "--innodb-flush-log-at-trx-commit=0",
-            "--log_bin_trust_function_creators=1",
-            "--sync-binlog=0");
+    private final List<String> cmdParameters = MySQLPreinitFileLockSupport.cmdParameters();
 
     @Test
     void mySQLContainerFactory_defaultBuilderIsStable() {
@@ -78,7 +70,7 @@ class MySQLContainerFactoryTest {
         try (MySQLContainer container = MySQLContainerFactory.createMySQLContainer(command)) {
             TimedContainerStart.start(container);
             imageName = container.getDockerImageName();
-            assertTablesAndDataCreated(container);
+            MySQLPreinitFileLockSupport.assertTablesAndDataCreated(container);
         } finally {
             if (imageName != null) {
                 DockerClient dockerClient = DockerClientFactory.lazyClient();
@@ -160,7 +152,7 @@ class MySQLContainerFactoryTest {
         try (MySQLContainer container = MySQLContainerFactory.createMySQLContainer(command)) {
             TimedContainerStart.start(container);
             imageName = container.getDockerImageName();
-            assertTablesAndDataCreated(container);
+            MySQLPreinitFileLockSupport.assertTablesAndDataCreated(container);
         } finally {
             if (imageName != null) {
                 DockerClient dockerClient = DockerClientFactory.lazyClient();
@@ -200,13 +192,7 @@ class MySQLContainerFactoryTest {
 
     private CreateMySQLContainerCommand.CreateMySQLContainerCommandBuilder<?, ?>
             basePreinitializedCommand() {
-        return CreateMySQLContainerCommand.builder()
-                .withBaseImageName("mysql:8.0.45")
-                .withPreInitialized(true)
-                .withDbName("testdb")
-                .withUsername("user")
-                .withPassword("password")
-                .withCmdParameters(cmdParameters);
+        return MySQLPreinitFileLockSupport.basePreinitializedCommand();
     }
 
     private MySQLContainer<?> createVanillaMySQLContainer(
@@ -263,29 +249,6 @@ class MySQLContainerFactoryTest {
                 assertThat(rs.next()).isTrue();
                 assertThat(rs.getInt(1)).as("table_001 min id should be 1").isEqualTo(1);
                 assertThat(rs.getInt(2)).as("table_001 max id should be 20").isEqualTo(20);
-            }
-        }
-    }
-
-    private static void assertTablesAndDataCreated(MySQLContainer container) throws Exception {
-        DataSource dataSource = DataSourceFactory.createDataSource(container);
-        try (Connection connection = dataSource.getConnection();
-                Statement statement = connection.createStatement()) {
-            try (ResultSet rs = statement.executeQuery(
-                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'testdb' AND table_name = 'test'")) {
-                assertThat(rs.next()).isTrue();
-                assertThat(rs.getInt(1))
-                        .as("init script should create table test")
-                        .isEqualTo(1);
-            }
-            try (ResultSet rs = statement.executeQuery("SELECT id FROM test ORDER BY id")) {
-                assertThat(rs.next()).isTrue();
-                assertThat(rs.getInt(1))
-                        .as("init script should insert row id=1")
-                        .isEqualTo(1);
-                assertThat(rs.next())
-                        .as("init scripts should define exactly one row in test")
-                        .isFalse();
             }
         }
     }
