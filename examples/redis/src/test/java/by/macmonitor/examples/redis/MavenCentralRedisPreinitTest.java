@@ -20,7 +20,6 @@ class MavenCentralRedisPreinitTest {
         String imageName = null;
         CreateRedisContainerCommand command = CreateRedisContainerCommand.builder()
                 .withBaseImageName("redis:7.4.2")
-                .withPreInitialized(true)
                 .build();
         try (RedisContainer container = RedisContainerFactory.createRedisContainer(command)) {
             TimedContainerStart.start(container);

@@ -60,7 +60,6 @@ class ClickHouseContainerFactoryTest {
         String imageName = null;
         CreateClickHouseContainerCommand command = CreateClickHouseContainerCommand.builder()
                 .withBaseImageName("clickhouse/clickhouse-server:26.3.4.11")
-                .withPreInitialized(true)
                 .withInitScripts(List.of(
                         "clickhouse/init.tables.expected.sql", "clickhouse/init.data.expected.sql"))
                 .withDbName("testdb")
@@ -156,7 +155,6 @@ class ClickHouseContainerFactoryTest {
             basePreinitializedCommand() {
         return CreateClickHouseContainerCommand.builder()
                 .withBaseImageName("clickhouse/clickhouse-server:26.3.4.11")
-                .withPreInitialized(true)
                 .withDbName("testdb")
                 .withUsername("user")
                 .withPassword("password")

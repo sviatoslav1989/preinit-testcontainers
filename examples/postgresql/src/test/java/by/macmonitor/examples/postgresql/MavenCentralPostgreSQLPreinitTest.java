@@ -25,7 +25,6 @@ class MavenCentralPostgreSQLPreinitTest {
         String imageName = null;
         CreatePostgreSQLContainerCommand command = CreatePostgreSQLContainerCommand.builder()
                 .withBaseImageName("postgres:17")
-                .withPreInitialized(true)
                 .withInitScripts(List.of(
                         "postgresql/init.tables.expected.sql", "postgresql/init.data.expected.sql"))
                 .withDbName("testdb")

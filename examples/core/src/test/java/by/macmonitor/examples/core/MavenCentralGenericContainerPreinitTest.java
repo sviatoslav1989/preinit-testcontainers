@@ -20,7 +20,6 @@ class MavenCentralGenericContainerPreinitTest {
         String imageName = null;
         CreateGenericContainerCommand command = CreateGenericContainerCommand.builder()
                 .withBaseImageName("redis:7.4.1")
-                .withPreInitialized(true)
                 .build();
         try (GenericContainer<?> container =
                 GenericContainerFactory.createGenericContainer(command)) {

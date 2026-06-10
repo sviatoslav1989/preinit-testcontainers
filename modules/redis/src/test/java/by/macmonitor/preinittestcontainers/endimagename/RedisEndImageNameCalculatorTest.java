@@ -17,7 +17,6 @@ class RedisEndImageNameCalculatorTest {
     void calculate_changesWhenClasspathResourceMappingChanges() {
         CreateRedisContainerCommand baseline = CreateRedisContainerCommand.builder()
                 .withBaseImageName("redis:7.4.2")
-                .withPreInitialized(true)
                 .withTmpFsFilesystems(List.of())
                 .build();
         CreateRedisContainerCommand withMapping = baseline.toBuilder()
@@ -35,7 +34,6 @@ class RedisEndImageNameCalculatorTest {
     void calculate_changesWhenEnvironmentVariablesChange() {
         CreateRedisContainerCommand baseline = CreateRedisContainerCommand.builder()
                 .withBaseImageName("redis:7.4.2")
-                .withPreInitialized(true)
                 .withTmpFsFilesystems(List.of())
                 .build();
         CreateRedisContainerCommand withEnv =
@@ -49,7 +47,6 @@ class RedisEndImageNameCalculatorTest {
     void calculate_changesWhenPasswordChanges() {
         CreateRedisContainerCommand withoutPassword = CreateRedisContainerCommand.builder()
                 .withBaseImageName("redis:7.4.2")
-                .withPreInitialized(true)
                 .build();
         CreateRedisContainerCommand withPassword =
                 withoutPassword.toBuilder().withPassword("secret").build();
@@ -62,11 +59,9 @@ class RedisEndImageNameCalculatorTest {
     void calculate_includesEntrypointFilesForAllPreInitializedCommands() {
         CreateRedisContainerCommand withPersist = CreateRedisContainerCommand.builder()
                 .withBaseImageName("redis:7.4.2")
-                .withPreInitialized(true)
                 .build();
         CreateRedisContainerCommand withoutPersist = CreateRedisContainerCommand.builder()
                 .withBaseImageName("redis:7.4.2")
-                .withPreInitialized(true)
                 .withTmpFsFilesystems(List.of(TmpFsSystemCommand.builder()
                         .withMountPath("/data")
                         .withOptions("rw")
@@ -82,7 +77,6 @@ class RedisEndImageNameCalculatorTest {
     void calculate_includesEntrypointFilesRegardlessOfPreInitializedFlag() {
         CreateRedisContainerCommand preInitialized = CreateRedisContainerCommand.builder()
                 .withBaseImageName("redis:7.4.2")
-                .withPreInitialized(true)
                 .build();
         CreateRedisContainerCommand notPreInitialized = CreateRedisContainerCommand.builder()
                 .withBaseImageName("redis:7.4.2")
@@ -97,7 +91,6 @@ class RedisEndImageNameCalculatorTest {
     void calculate_isDeterministicForFixedInputs() {
         CreateRedisContainerCommand command = CreateRedisContainerCommand.builder()
                 .withBaseImageName("redis:7.4.2")
-                .withPreInitialized(true)
                 .withPassword("secret")
                 .build();
         String first = RedisEndImageNameCalculator.INSTANCE.calculate(command);

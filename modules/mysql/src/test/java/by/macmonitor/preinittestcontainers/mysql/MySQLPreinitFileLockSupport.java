@@ -81,7 +81,6 @@ final class MySQLPreinitFileLockSupport {
             basePreinitializedCommand() {
         return CreateMySQLContainerCommand.builder()
                 .withBaseImageName("mysql:8.0.45")
-                .withPreInitialized(true)
                 .withDbName("testdb")
                 .withUsername("user")
                 .withPassword("password")

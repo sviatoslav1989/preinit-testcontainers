@@ -39,7 +39,6 @@ class RedisContainerFactoryTest {
         String imageName = null;
         CreateRedisContainerCommand command = CreateRedisContainerCommand.builder()
                 .withBaseImageName("redis:7.4.2")
-                .withPreInitialized(true)
                 .build();
         try (RedisContainer container = RedisContainerFactory.createRedisContainer(command)) {
             TimedContainerStart.start(container);
@@ -58,7 +57,6 @@ class RedisContainerFactoryTest {
         String imageName = null;
         CreateRedisContainerCommand command = CreateRedisContainerCommand.builder()
                 .withBaseImageName("redis:7.4.2")
-                .withPreInitialized(true)
                 .withTmpFsFilesystems(Collections.emptyList())
                 .build();
         try (RedisContainer container = RedisContainerFactory.createRedisContainer(command)) {

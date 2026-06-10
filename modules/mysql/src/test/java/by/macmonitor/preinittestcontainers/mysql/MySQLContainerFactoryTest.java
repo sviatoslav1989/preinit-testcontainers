@@ -54,7 +54,6 @@ class MySQLContainerFactoryTest {
         String imageName = null;
         CreateMySQLContainerCommand command = CreateMySQLContainerCommand.builder()
                 .withBaseImageName("mysql:8.0.45")
-                .withPreInitialized(true)
                 .withInitScripts(
                         List.of("mysql/init.tables.expected.sql", "mysql/init.data.expected.sql"))
                 .withDbName("testdb")
@@ -140,7 +139,6 @@ class MySQLContainerFactoryTest {
         String imageName = null;
         CreateMySQLContainerCommand command = CreateMySQLContainerCommand.builder()
                 .withBaseImageName("mysql:8.0.45")
-                .withPreInitialized(true)
                 .withTmpFsFilesystems(Collections.emptyList())
                 .withInitScripts(
                         List.of("mysql/init.tables.expected.sql", "mysql/init.data.expected.sql"))
