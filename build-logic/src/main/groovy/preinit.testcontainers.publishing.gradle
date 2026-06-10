@@ -36,3 +36,14 @@ mavenPublishing {
 signing {
     useGpgCmd()
 }
+
+afterEvaluate {
+    tasks.named('sourcesJar', Jar) {
+        dependsOn tasks.named('delombok')
+        exclude { detail ->
+            project.extensions.getByType(JavaPluginExtension)
+                .sourceSets.main.allSource.contains(detail.file)
+        }
+        from(tasks.named('delombok'))
+    }
+}
