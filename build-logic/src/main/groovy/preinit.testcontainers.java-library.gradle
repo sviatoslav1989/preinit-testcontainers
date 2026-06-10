@@ -11,7 +11,7 @@ version = rootProject.version
 def tcBomVersion = providers.gradleProperty('testcontainersBomVersion')
     .orElse(libs.versions.testcontainersBom)
 
-ext.testcontainersVersionRange = '[1.20.0,2.0.0)'
+ext.testcontainersVersionRange = '[1.10.0,2.0.0)'
 
 ext.configureTestcontainersApi = { DependencyHandler handler, String notation ->
     handler.api(notation) {
