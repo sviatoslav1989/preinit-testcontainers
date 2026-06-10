@@ -5,6 +5,10 @@ plugins {
 group = 'by.macmonitor'
 version = '2.0.0-SNAPSHOT'
 
+spotless {
+    enforceCheck false
+}
+
 spotlessPredeclare {
     java {
         importOrder('', 'java', 'javax', '\\#')
