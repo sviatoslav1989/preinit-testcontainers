@@ -1,11 +1,11 @@
 package by.macmonitor.preinittestcontainers.mysql;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTimeout;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.NotFoundException;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 
@@ -21,13 +21,16 @@ import java.util.stream.IntStream;
 class MySQLContainerFactoryFileLockTest {
 
     private static final int WORKER_COUNT = 4;
+
     private static final Duration TEST_TIMEOUT = Duration.ofMinutes(15);
+
     private static final Duration READY_BARRIER_TIMEOUT = Duration.ofMinutes(2);
+
     private static final Duration READY_POLL_INTERVAL = Duration.ofMillis(100);
 
     @Test
     void fourJvms_coordinateImageBuildWithFileLock() throws Exception {
-        assertTimeout(TEST_TIMEOUT, () -> runFileLockTest());
+        Assertions.assertTimeout(TEST_TIMEOUT, () -> runFileLockTest());
     }
 
     private void runFileLockTest() throws Exception {
@@ -151,9 +154,9 @@ class MySQLContainerFactoryFileLockTest {
     private static void waitForReadyMarkers(Path workDir) throws InterruptedException {
         long deadlineNanos = System.nanoTime() + READY_BARRIER_TIMEOUT.toNanos();
         while (System.nanoTime() < deadlineNanos) {
-            boolean allReady = IntStream.range(0, WORKER_COUNT)
-                    .allMatch(index ->
-                            Files.exists(MySQLPreinitFileLockSupport.readyMarker(workDir, index)));
+            boolean allReady = IntStream.range(0, WORKER_COUNT).allMatch(index -> {
+                return Files.exists(MySQLPreinitFileLockSupport.readyMarker(workDir, index));
+            });
             if (allReady) {
                 return;
             }

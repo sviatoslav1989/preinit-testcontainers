@@ -11,6 +11,7 @@ import java.time.Duration;
 public final class MySQLPreinitFileLockWorker {
 
     private static final Duration GO_SIGNAL_TIMEOUT = Duration.ofMinutes(5);
+
     private static final Duration GO_SIGNAL_POLL_INTERVAL = Duration.ofMillis(100);
 
     private MySQLPreinitFileLockWorker() {}

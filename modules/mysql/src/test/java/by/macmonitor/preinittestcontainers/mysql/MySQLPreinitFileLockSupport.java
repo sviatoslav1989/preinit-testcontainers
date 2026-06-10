@@ -25,7 +25,9 @@ final class MySQLPreinitFileLockSupport {
     static final Charset WORKER_TEXT_CHARSET = StandardCharsets.UTF_8;
 
     static final String LOG_TRY_TO_BUILD = "Try to build local image:";
+
     static final String LOG_ALREADY_EXISTS = "already exists (built by another process)";
+
     static final String LOG_SUCCESSFUL_BUILD = "Successful build of local image:";
 
     private static final List<String> CMD_PARAMETERS = List.of(
@@ -43,8 +45,10 @@ final class MySQLPreinitFileLockSupport {
 
     private static final Pattern RESULT_SUCCESS_PATTERN =
             Pattern.compile("\"success\"\\s*:\\s*(true|false)");
+
     private static final Pattern RESULT_END_IMAGE_PATTERN =
             Pattern.compile("\"endImageName\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"");
+
     private static final Pattern RESULT_ERROR_PATTERN =
             Pattern.compile("\"errorMessage\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"");
 
