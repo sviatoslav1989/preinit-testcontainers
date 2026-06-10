@@ -2,7 +2,7 @@ package by.macmonitor.preinittestcontainers.mysql;
 
 import by.macmonitor.preinittestcontainers.support.TimedContainerStart;
 
-import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.containers.MySQLContainer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
