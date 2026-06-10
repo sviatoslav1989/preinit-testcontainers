@@ -19,6 +19,11 @@ import java.util.function.Consumer;
 /**
  * Read-side contract for container creation commands, consumed by {@link ContainerFactory},
  * {@link GenericContainerFactory}, and {@link ContainerEndImageNameCalculator}.
+ *
+ * <p>Immutable configuration DTO so factories, end-image calculators, and tests can consume
+ * container settings without Lombok builders or Testcontainers types. Module-specific commands (for
+ * example {@code CreateGenericContainerCommand}, {@code CreateJdbcContainerCommand}) extend the
+ * same surface so shared factory logic works across databases and generic images.
  */
 public interface CreateContainerCommand {
     PreInitStartCallback getAfterPreInitStartCallback();

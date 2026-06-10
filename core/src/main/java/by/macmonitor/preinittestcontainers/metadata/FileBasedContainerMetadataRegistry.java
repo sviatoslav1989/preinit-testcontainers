@@ -1,6 +1,7 @@
 package by.macmonitor.preinittestcontainers.metadata;
 
 import by.macmonitor.preinittestcontainers.ContainerMetadata;
+import by.macmonitor.preinittestcontainers.GenericContainerFactory;
 
 import org.testcontainers.utility.DockerImageName;
 
@@ -9,10 +10,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Classpath-backed registry that loads {@code preinit-testcontainers/metadata/{segment}.metadata}
- * where {@code segment} is the last path component of the image repository (e.g.
- * {@code library/mysql:8} → {@code mysql.metadata}, {@code clickhouse/clickhouse-server:26} →
- * {@code clickhouse-server.metadata}).
+ * Default {@link ContainerMetadataRegistry} used by {@link GenericContainerFactory}.
+ *
+ * <p>Loads {@code preinit-testcontainers/metadata/{segment}.metadata} from the classpath, where
+ * {@code segment} is the last path component of the image repository (e.g. {@code library/mysql:8}
+ * → {@code mysql.metadata}, {@code clickhouse/clickhouse-server:26} →
+ * {@code clickhouse-server.metadata}). Results are cached per resource path.
  */
 public final class FileBasedContainerMetadataRegistry implements ContainerMetadataRegistry {
 

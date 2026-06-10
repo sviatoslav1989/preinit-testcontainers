@@ -14,6 +14,15 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.function.Function;
 
+/**
+ * {@link GenericContainerFactory} for JDBC
+ * {@link org.testcontainers.containers.JdbcDatabaseContainer} types: applies database name,
+ * credentials, init scripts, and URL parameters from {@link CreateJdbcContainerCommand}, and uses
+ * {@link JdbcEndImageNameCalculator} for end-image naming.
+ *
+ * <p>Database modules ({@code MySQLContainerFactory}, {@code PostgreSQLContainerFactory}, and so
+ * on) extend this class and supply a container supplier only.
+ */
 @Slf4j
 @SuperBuilder(toBuilder = true, setterPrefix = "with")
 @NoArgsConstructor(access = AccessLevel.PUBLIC)

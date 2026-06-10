@@ -4,6 +4,10 @@ import by.macmonitor.preinittestcontainers.redis.CreateRedisContainerCommand;
 
 import java.util.List;
 
+/**
+ * {@link ContainerEndImageNameCalculator} for {@link CreateRedisContainerCommand} that includes
+ * Redis password and command-line parameters in the end-image hash.
+ */
 public class RedisEndImageNameCalculator
         extends GenericContainerEndImageNameCalculator<CreateRedisContainerCommand> {
 

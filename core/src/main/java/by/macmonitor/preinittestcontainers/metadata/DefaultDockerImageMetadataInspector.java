@@ -20,6 +20,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Default {@link DockerImageMetadataInspector} that pulls the image when missing and reads
+ * {@code ENTRYPOINT}, {@code CMD}, {@code VOLUMES}, and working directory via the Docker API.
+ *
+ * <p>Resolves relative entrypoint paths against image {@code WORKDIR}. Used when
+ * {@link FileBasedContainerMetadataRegistry} has no bundled metadata for the base image.
+ */
 @Slf4j
 public final class DefaultDockerImageMetadataInspector implements DockerImageMetadataInspector {
 

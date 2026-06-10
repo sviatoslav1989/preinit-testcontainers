@@ -16,6 +16,10 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.function.Function;
 
+/**
+ * {@link GenericContainerFactory} for Redis via {@link RedisContainer}, applying password env and
+ * {@link RedisEndImageNameCalculator} for end-image naming.
+ */
 @Slf4j
 @SuperBuilder(toBuilder = true, setterPrefix = "with")
 @NoArgsConstructor(access = AccessLevel.PUBLIC)

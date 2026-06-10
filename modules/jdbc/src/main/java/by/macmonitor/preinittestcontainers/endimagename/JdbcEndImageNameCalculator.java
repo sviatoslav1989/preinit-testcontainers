@@ -4,6 +4,13 @@ import by.macmonitor.preinittestcontainers.CreateJdbcContainerCommand;
 
 import java.util.List;
 
+/**
+ * {@link ContainerEndImageNameCalculator} for {@link CreateJdbcContainerCommand} that folds
+ * database name, credentials, and init script paths into the pre-initialized image hash.
+ *
+ * <p>Uses {@code dbName} as the image name prefix so different logical databases get distinct
+ * cached images. Shared singleton via {@link #instance()}.
+ */
 public class JdbcEndImageNameCalculator<C extends CreateJdbcContainerCommand>
         extends GenericContainerEndImageNameCalculator<C> {
 

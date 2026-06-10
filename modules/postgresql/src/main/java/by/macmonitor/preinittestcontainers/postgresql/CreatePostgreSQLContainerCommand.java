@@ -10,6 +10,10 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * {@link by.macmonitor.preinittestcontainers.CreateContainerCommand} for PostgreSQL containers with
+ * a module-specific default wait strategy.
+ */
 @Getter
 @SuperBuilder(toBuilder = true, setterPrefix = "with")
 public class CreatePostgreSQLContainerCommand extends CreateJdbcContainerCommand {

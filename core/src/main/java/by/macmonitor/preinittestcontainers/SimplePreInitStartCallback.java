@@ -6,6 +6,12 @@ import org.testcontainers.containers.GenericContainer;
 
 import java.util.function.Consumer;
 
+/**
+ * {@link PreInitStartCallback} backed by a stable key and a {@link Consumer} invoked once during
+ * pre-initialized image build.
+ *
+ * <p>Prefer {@link PreInitStartCallback#of(String, Consumer)} over constructing this type directly.
+ */
 @RequiredArgsConstructor
 public class SimplePreInitStartCallback implements PreInitStartCallback {
 

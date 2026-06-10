@@ -8,6 +8,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * {@link CreateContainerCommand} extension for JDBC database containers with shared credentials,
+ * init scripts, and URL parameters.
+ *
+ * <p>Database-specific commands ({@code CreateMySQLContainerCommand},
+ * {@code CreatePostgreSQLContainerCommand}, and so on) extend this type.
+ */
 @Getter
 @SuperBuilder(toBuilder = true, setterPrefix = "with")
 public abstract class CreateJdbcContainerCommand extends CreateGenericContainerCommand {

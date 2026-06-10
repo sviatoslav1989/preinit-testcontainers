@@ -26,6 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Immutable {@link CreateContainerCommand} for generic Testcontainers images, built via
+ * {@link CreateContainerCommandBuilder}.
+ *
+ * <p>Base type for module commands such as {@code CreateJdbcContainerCommand} and
+ * {@code CreateRedisContainerCommand}.
+ */
 @Getter
 @SuperBuilder(toBuilder = true, setterPrefix = "with")
 public class CreateGenericContainerCommand implements CreateContainerCommand {
