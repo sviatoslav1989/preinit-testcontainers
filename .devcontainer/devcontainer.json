@@ -4,7 +4,6 @@
     "runArgs": ["--network", "host"],
     "mounts": [
         "source=preinit-testcontainers-gradle-cache,target=${containerWorkspaceFolder}/.gradle,type=volume",
-        "source=${localEnv:USERPROFILE}${localEnv:HOME}/.gradle/gradle.properties,target=/home/vscode/.gradle/gradle.properties,type=bind,readonly",
         "source=${localWorkspaceFolder}/../testcontainers-java,target=${containerWorkspaceFolder}/../testcontainers-java,type=bind,readonly"
     ],
     "features": {
