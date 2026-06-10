@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'checkstyle'
     id 'com.diffplug.spotless'
+    id 'io.freefair.lombok'
 }
 
 group = rootProject.group
@@ -24,6 +25,10 @@ ext.configureTestcontainersApi = { DependencyHandler handler, String notation ->
 checkstyle {
     toolVersion = libs.versions.checkstyle.get()
     configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+}
+
+lombok {
+    version = libs.versions.lombok.get()
 }
 
 java {
@@ -83,16 +88,11 @@ dependencies {
     compileOnly testcontainersBom
     testImplementation testcontainersBom
 
-    compileOnly libs.lombok
-    annotationProcessor libs.lombok
-
     testImplementation platform(libs.junit.bom)
     testImplementation libs.junit.jupiter
     testImplementation libs.assertj.core
     testImplementation libs.testcontainers.junit.jupiter
     testImplementation libs.slf4j.simple
-    testCompileOnly libs.lombok
-    testAnnotationProcessor libs.lombok
     testRuntimeOnly libs.junit.platform.launcher
 }
 
