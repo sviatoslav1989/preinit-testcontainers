@@ -18,7 +18,6 @@ class MavenCentralJdbcPreinitTest {
     void preinitImageNameIsStableWithInitScripts() {
         TestJdbcContainerCommand command = TestJdbcContainerCommand.builder()
                 .withBaseImageName("postgres:17")
-                .withPreInitialized(true)
                 .withDbName("testdb")
                 .withUsername("user")
                 .withPassword("password")

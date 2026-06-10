@@ -108,7 +108,6 @@ class PostgreSQLContainerFactoryTest {
         String imageName = null;
         CreatePostgreSQLContainerCommand command = CreatePostgreSQLContainerCommand.builder()
                 .withBaseImageName("postgres:17")
-                .withPreInitialized(true)
                 .withInitScripts(List.of(
                         "postgresql/init.tables.expected.sql", "postgresql/init.data.expected.sql"))
                 .withDbName("testdb")
@@ -194,7 +193,6 @@ class PostgreSQLContainerFactoryTest {
         String imageName = null;
         CreatePostgreSQLContainerCommand command = CreatePostgreSQLContainerCommand.builder()
                 .withBaseImageName("postgres:17")
-                .withPreInitialized(true)
                 .withTmpFsFilesystems(Collections.emptyList())
                 .withInitScripts(List.of(
                         "postgresql/init.tables.expected.sql", "postgresql/init.data.expected.sql"))
@@ -241,7 +239,6 @@ class PostgreSQLContainerFactoryTest {
         String endImageName = null;
         CreatePostgreSQLContainerCommand command = CreatePostgreSQLContainerCommand.builder()
                 .withBaseImageName(imageName)
-                .withPreInitialized(true)
                 .withInitScripts(List.of(
                         "postgresql/init.tables.expected.sql", "postgresql/init.data.expected.sql"))
                 .withDbName("testdb")
@@ -279,7 +276,6 @@ class PostgreSQLContainerFactoryTest {
             basePreinitializedCommand() {
         return CreatePostgreSQLContainerCommand.builder()
                 .withBaseImageName("postgres:17")
-                .withPreInitialized(true)
                 .withDbName("testdb")
                 .withUsername("user")
                 .withPassword("password")
