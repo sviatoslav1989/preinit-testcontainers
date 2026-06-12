@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate PostgreSQL init DDL/DML fixtures with configurable table and row counts."""
+"""Generate MySQL init DDL/DML fixtures with configurable table and row counts."""
 
 import argparse
 import random
@@ -43,11 +43,11 @@ def table_name(index: int) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate PostgreSQL init SQL fixtures.")
+    parser = argparse.ArgumentParser(description="Generate MySQL init SQL fixtures.")
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("modules/postgresql/src/test/resources/postgresql"),
+        default=Path(__file__).resolve().parent,
         help="Directory for output SQL files",
     )
     parser.add_argument("--tables", type=int, default=100, help="Number of tables to generate")

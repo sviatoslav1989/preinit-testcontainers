@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate MySQL init DDL/DML fixtures with configurable table and row counts."""
+"""Generate ClickHouse init DDL/DML fixtures with configurable table and row counts."""
 
 import argparse
 import random
@@ -19,23 +19,21 @@ def random_alphanumeric(length: int, rng: random.Random) -> str:
 def generate_ddl(table_name: str) -> str:
     return f"""CREATE TABLE {table_name}
 (
-    id INT NOT NULL,
-    col1 VARCHAR(64) NOT NULL,
-    col2 VARCHAR(64) NOT NULL,
-    col3 VARCHAR(64) NOT NULL,
-    col4 VARCHAR(64) NOT NULL,
-    col5 VARCHAR(64) NOT NULL,
-    PRIMARY KEY (id)
-);"""
+    id Int32,
+    col1 String,
+    col2 String,
+    col3 String,
+    col4 String,
+    col5 String
+)
+ENGINE = MergeTree
+ORDER BY id;"""
 
 
 def generate_insert(table_name: str, row_id: int, rng: random.Random) -> str:
     cols = [random_alphanumeric(rng.randint(8, 32), rng) for _ in range(5)]
     values = ", ".join(f"'{escape_sql_string(col)}'" for col in cols)
-    return (
-        f"INSERT INTO {table_name} (id, col1, col2, col3, col4, col5)\n"
-        f"VALUES ({row_id}, {values});"
-    )
+    return f"INSERT INTO {table_name} (id, col1, col2, col3, col4, col5) VALUES ({row_id}, {values});"
 
 
 def table_name(index: int) -> str:
@@ -43,11 +41,11 @@ def table_name(index: int) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate MySQL init SQL fixtures.")
+    parser = argparse.ArgumentParser(description="Generate ClickHouse init SQL fixtures.")
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("modules/mysql/src/test/resources/mysql"),
+        default=Path(__file__).resolve().parent,
         help="Directory for output SQL files",
     )
     parser.add_argument("--tables", type=int, default=100, help="Number of tables to generate")
