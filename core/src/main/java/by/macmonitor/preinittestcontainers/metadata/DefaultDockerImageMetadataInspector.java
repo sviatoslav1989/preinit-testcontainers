@@ -19,18 +19,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Default {@link DockerImageMetadataInspector} that pulls the image when missing and reads
  * {@code ENTRYPOINT}, {@code CMD}, {@code VOLUMES}, and working directory via the Docker API.
  *
  * <p>Resolves relative entrypoint paths against image {@code WORKDIR}. Used when
- * {@link FileBasedContainerMetadataRegistry} has no bundled metadata for the base image.
+ * {@link FileBasedContainerMetadataRegistry} has no bundled metadata for the base image. Results
+ * are cached per canonical image name for the lifetime of this inspector instance.
  */
 @Slf4j
 public final class DefaultDockerImageMetadataInspector implements DockerImageMetadataInspector {
 
     private final DockerClient dockerClient;
+
+    private final ConcurrentMap<String, ContainerMetadata> cache = new ConcurrentHashMap<>();
 
     public DefaultDockerImageMetadataInspector(DockerClient dockerClient) {
         this.dockerClient = Objects.requireNonNull(dockerClient, "dockerClient");
@@ -40,6 +45,21 @@ public final class DefaultDockerImageMetadataInspector implements DockerImageMet
     public ContainerMetadata inspect(String imageName) {
         Objects.requireNonNull(imageName, "imageName");
         DockerImageName parsed = DockerImageName.parse(imageName);
+        String canonicalImage = parsed.asCanonicalNameString();
+        return cache.computeIfAbsent(canonicalImage, key -> inspectUncached(parsed));
+    }
+
+    private void ensureImagePresent(DockerImageName imageName) {
+        String canonicalImage = imageName.asCanonicalNameString();
+        try {
+            dockerClient.inspectImageCmd(canonicalImage).exec();
+        } catch (NotFoundException e) {
+            new RemoteDockerImage(imageName).get();
+            dockerClient.inspectImageCmd(canonicalImage).exec();
+        }
+    }
+
+    private ContainerMetadata inspectUncached(DockerImageName parsed) {
         String canonicalImage = parsed.asCanonicalNameString();
         ensureImagePresent(parsed);
 
@@ -59,16 +79,6 @@ public final class DefaultDockerImageMetadataInspector implements DockerImageMet
                 .withCmd(cmd)
                 .withVolumes(volumes)
                 .build();
-    }
-
-    private void ensureImagePresent(DockerImageName imageName) {
-        String canonicalImage = imageName.asCanonicalNameString();
-        try {
-            dockerClient.inspectImageCmd(canonicalImage).exec();
-        } catch (NotFoundException e) {
-            new RemoteDockerImage(imageName).get();
-            dockerClient.inspectImageCmd(canonicalImage).exec();
-        }
     }
 
     private String readContainerStdout(String containerId) {
