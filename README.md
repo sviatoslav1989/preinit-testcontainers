@@ -7,6 +7,8 @@ Faster [Testcontainers](https://java.testcontainers.org/) integration tests by b
 
 **Repository:** [github.com/sviatoslav1989/preinit-testcontainers](https://github.com/sviatoslav1989/preinit-testcontainers)
 
+**Contents:** [What and why](#what-and-why) · [How it works](#how-it-works) · [Prerequisites](#prerequisites) · [Installation](#installation) · [Quick start](#quick-start) · [Tips](#tips) · [Performance](#performance) · [Internals](#internals) · [Extension points](#extension-points) · [Examples](#examples)
+
 ## What and why
 
 Testcontainers starts fresh containers on every test run. Each cold start pays a high cost: image pull, process boot, and initialization (SQL scripts, migrations, custom setup).
@@ -33,18 +35,29 @@ Testcontainers starts fresh containers on every test run. Each cold start pays a
 3. Test run: container starts from the end image + tmpfs restore.
 4. Same API as stock Testcontainers (`start()`, JDBC URL, JUnit extension).
 
+Preinit replaces the image entrypoint with [`testcontainer-entrypoint.sh`](core/src/main/resources/docker/testcontainer-entrypoint.sh). To delegate correctly to the upstream image and mount tmpfs on the right data dirs, the factory needs **image metadata** (`ENTRYPOINT`, `CMD`, `VOLUMES`). DB modules ship this automatically; custom images may need `withMetadata(...)` — see [Image metadata](#image-metadata).
+
 ```mermaid
 sequenceDiagram
     participant Test
-    participant Factory
+    participant Factory as Container factory
     participant Docker
+
     Test->>Factory: createMySQLContainer(command)
-    alt end image missing
-        Factory->>Docker: start temp container + init
-        Factory->>Docker: commit end image
+
+    alt End image not cached
+        Factory->>Docker: Start temp container
+        Factory->>Docker: Run init scripts
+        Factory->>Docker: Commit end image
+    else End image cached
+        Note over Factory: Skip one-time build
     end
-    Factory->>Docker: start from end image
-    Test->>Test: run assertions
+
+    Factory->>Docker: Start from end image
+    Note over Docker: tmpfs restore
+    Docker-->>Factory: Container ready
+    Factory-->>Test: MySQLContainer
+    Test->>Test: Run assertions
 ```
 
 ## Prerequisites
@@ -59,6 +72,19 @@ sequenceDiagram
 Coordinates: `by.macmonitor` / `2.0.0-SNAPSHOT`.
 
 While the version is `-SNAPSHOT`, add the Central snapshots repository. Use **`test`** / **`testImplementation`** scope in normal apps (`src/main` + `src/test`). The [examples](examples/) use `implementation` only because those modules are test-only sample projects.
+
+### Modules
+
+| Artifact | Use when | Extra test dependency |
+|----------|----------|----------------------|
+| `preinit-testcontainers` | Generic images / custom containers | — |
+| `preinit-testcontainers-jdbc` | Custom JDBC-backed modules | your JDBC driver |
+| `preinit-testcontainers-mysql` | MySQL (`testcontainers-mysql`) | `com.mysql:mysql-connector-j:9.6.0` |
+| `preinit-testcontainers-postgresql` | PostgreSQL | `org.postgresql:postgresql:42.7.5` |
+| `preinit-testcontainers-clickhouse` | ClickHouse | `com.clickhouse:clickhouse-jdbc:0.9.8` |
+| `preinit-testcontainers-redis` | Redis (`com.redis:testcontainers-redis`) | — |
+
+Each DB module pulls its Testcontainers counterpart transitively via `api`.
 
 ### Maven
 
@@ -85,7 +111,7 @@ While the version is `-SNAPSHOT`, add the Central snapshots repository. Use **`t
 </dependencyManagement>
 
 <dependencies>
-  <!-- Pick one preinit module (see Modules table) -->
+  <!-- Pick one preinit module (see Modules table above) -->
   <dependency>
     <groupId>by.macmonitor</groupId>
     <artifactId>preinit-testcontainers-mysql</artifactId>
@@ -112,17 +138,6 @@ While the version is `-SNAPSHOT`, add the Central snapshots repository. Use **`t
 </dependencies>
 ```
 
-**Per-module artifacts** — swap the preinit artifact and add the matching JDBC driver where needed:
-
-| Artifact | Extra test dependency |
-|----------|----------------------|
-| `preinit-testcontainers` | — |
-| `preinit-testcontainers-jdbc` | your JDBC driver |
-| `preinit-testcontainers-mysql` | `com.mysql:mysql-connector-j:9.6.0` |
-| `preinit-testcontainers-postgresql` | `org.postgresql:postgresql:42.7.5` |
-| `preinit-testcontainers-clickhouse` | `com.clickhouse:clickhouse-jdbc:0.9.8` |
-| `preinit-testcontainers-redis` | — |
-
 ### Gradle
 
 ```groovy
@@ -136,6 +151,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
+    // Pick one preinit module (see Modules table above)
     testImplementation "by.macmonitor:preinit-testcontainers-mysql:2.0.0-SNAPSHOT"
     testImplementation "com.mysql:mysql-connector-j:9.6.0"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
@@ -143,44 +159,16 @@ dependencies {
 }
 ```
 
-**Per-module artifacts:**
+## Quick start
 
-```groovy
-// Generic / custom containers
-testImplementation "by.macmonitor:preinit-testcontainers:2.0.0-SNAPSHOT"
+- `preInitialized` defaults to `true` on commands.
+- **First start** may be slow (image build); later starts reuse the end image.
+- Init scripts live on the **test classpath** (e.g. `src/test/resources/`).
 
-// JDBC-backed custom modules
-testImplementation "by.macmonitor:preinit-testcontainers-jdbc:2.0.0-SNAPSHOT"
-
-// Database modules (+ JDBC driver where noted)
-testImplementation "by.macmonitor:preinit-testcontainers-mysql:2.0.0-SNAPSHOT"
-testImplementation "com.mysql:mysql-connector-j:9.6.0"
-
-testImplementation "by.macmonitor:preinit-testcontainers-postgresql:2.0.0-SNAPSHOT"
-testImplementation "org.postgresql:postgresql:42.7.5"
-
-testImplementation "by.macmonitor:preinit-testcontainers-clickhouse:2.0.0-SNAPSHOT"
-testImplementation "com.clickhouse:clickhouse-jdbc:0.9.8"
-
-testImplementation "by.macmonitor:preinit-testcontainers-redis:2.0.0-SNAPSHOT"
-```
-
-Each DB module pulls its Testcontainers counterpart transitively via `api`.
-
-## Modules
-
-| Artifact | Use when |
-|----------|----------|
-| `preinit-testcontainers` | Generic images / custom containers |
-| `preinit-testcontainers-jdbc` | Custom JDBC-backed modules |
-| `preinit-testcontainers-mysql` | MySQL (`testcontainers-mysql`) |
-| `preinit-testcontainers-postgresql` | PostgreSQL |
-| `preinit-testcontainers-clickhouse` | ClickHouse |
-| `preinit-testcontainers-redis` | Redis (`com.redis:testcontainers-redis`) |
-
-## Quick start (MySQL)
+### MySQL (bundled module)
 
 ```java
+import by.macmonitor.preinittestcontainers.PreInitStartCallback;
 import by.macmonitor.preinittestcontainers.mysql.CreateMySQLContainerCommand;
 import by.macmonitor.preinittestcontainers.mysql.MySQLContainerFactory;
 import org.testcontainers.mysql.MySQLContainer;
@@ -193,6 +181,11 @@ CreateMySQLContainerCommand command = CreateMySQLContainerCommand.builder()
     .withDbName("testdb")
     .withUsername("user")
     .withPassword("password")
+    .withAfterPreInitStartCallback(PreInitStartCallback.of(
+        "example-callback-v1",
+        container -> {
+            // Custom init during image build (not at test runtime).
+        }))
     .build();
 
 try (MySQLContainer container = MySQLContainerFactory.createMySQLContainer(command)) {
@@ -201,11 +194,52 @@ try (MySQLContainer container = MySQLContainerFactory.createMySQLContainer(comma
 }
 ```
 
-- `preInitialized` defaults to `true` on commands.
-- **First start** may be slow (image build); later starts reuse the end image.
-- Init scripts live on the **test classpath** (e.g. `src/test/resources/`).
+### Generic container (MongoDB)
 
-## Benchmarks
+Use the core [`preinit-testcontainers`](core/) artifact with [`GenericContainerFactory.createGenericContainer()`](core/src/main/java/by/macmonitor/preinittestcontainers/GenericContainerFactory.java) for images without a bundled module:
+
+```groovy
+testImplementation "by.macmonitor:preinit-testcontainers:2.0.0-SNAPSHOT"
+testImplementation "org.testcontainers:testcontainers-junit-jupiter"
+```
+
+```java
+import by.macmonitor.preinittestcontainers.CreateGenericContainerCommand;
+import by.macmonitor.preinittestcontainers.GenericContainerFactory;
+import by.macmonitor.preinittestcontainers.PreInitStartCallback;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+
+CreateGenericContainerCommand command = CreateGenericContainerCommand.builder()
+    .withBaseImageName("mongo:7.0")
+    .withExposedPorts(27017)
+    .waitingFor(Wait.forListeningPort())
+    .withAfterPreInitStartCallback(PreInitStartCallback.of(
+        "mongo-seed-v1",
+        container -> {
+            container.execInContainer("mongosh", "--eval",
+                "db.getSiblingDB('testdb').users.insertOne({name: 'alice'})");
+        }))
+    .build();
+
+try (GenericContainer<?> container = GenericContainerFactory.createGenericContainer(command)) {
+    container.start();
+    // container.getHost(), container.getMappedPort(27017)
+}
+```
+
+- Image metadata for `mongo` is resolved via [docker inspect fallback](#image-metadata) (no bundled `.metadata` file in core).
+
+## Tips
+
+- **Single-test runs:** Preinit is especially helpful when you run one test (e.g. from your IDE) — container startup often dominates runtime, and preinit reduces `start()` time significantly once the end image exists (see [Performance](#performance)).
+- **First-run cost:** The initial start builds and commits the end image. Steady-state `start()` times match the [Performance](#performance) "Preinit" rows.
+- **Parallel CI:** Cross-process locking via [`ImageCreationLockService`](core/src/main/java/by/macmonitor/preinittestcontainers/ImageCreationLockService.java) is built-in; tune via [`ImageCreationLockOption`](core/src/main/java/by/macmonitor/preinittestcontainers/ImageCreationLockOption.java) if needed (see [Extension points](#extension-points)).
+- **Disable pre-init:** `.withPreInitialized(false)` for stock Testcontainers behavior.
+- **Spring Boot:** See [examples/spring-boot-mysql](examples/spring-boot-mysql) (BOM import, exclude Testcontainers from `spring-boot-starter-test`).
+- **Building from source:** `./gradlew build` (Java 21 toolchain for dev; published JAR is Java 8).
+
+## Performance
 
 Startup time for `container.start()` until ready (measured by `TimedContainerStart`). Workload: **100 tables** with **20 rows per table** (2,000 inserts), or empty DB. Five repetitions per database; **median** reported below. Results from this repo's dev setup (WSL2/Docker); absolute numbers vary — relative speedups are the takeaway.
 
@@ -227,17 +261,17 @@ Images: `mysql:8.0.45` (`/var/lib/mysql`), `postgres:17` (`/var/lib/postgresql/d
 
 Init-heavy workloads show the largest gains; empty DB still benefits from pre-baked image + tmpfs restore.
 
-## Advanced
+## Internals
 
-- **First-run cost:** The initial start builds and commits the end image. Steady-state `start()` times match the benchmark "Preinit" rows above.
-- **Parallel CI:** Cross-process locking via [`ImageCreationLockService`](core/src/main/java/by/macmonitor/preinittestcontainers/ImageCreationLockService.java) is built-in; tune via [`ImageCreationLockOption`](core/src/main/java/by/macmonitor/preinittestcontainers/ImageCreationLockOption.java) if needed (see [Extension points](#extension-points)).
-- **Disable pre-init:** `.withPreInitialized(false)` for stock Testcontainers behavior.
-- **Spring Boot:** See [examples/spring-boot-mysql](examples/spring-boot-mysql) (BOM import, exclude Testcontainers from `spring-boot-starter-test`).
-- **Building from source:** `./gradlew build` (Java 21 toolchain for dev; published JAR is Java 8).
+The following sections describe what happens under `create*Container()` — useful for debugging, custom images, and module authors. If you use a bundled DB module with a supported image tag, [Quick start](#quick-start) and [Tips](#tips) are usually enough.
 
-### Metadata
+<a id="image-metadata"></a>
 
-**Metadata** is upstream Docker image invocation data — `ENTRYPOINT`, `CMD`, and data-directory `VOLUMES` — required to wrap the library entrypoint and configure tmpfs snapshot/restore. It is **not** Maven or project metadata.
+### Image metadata (entrypoint & data dirs)
+
+**Why this exists:** Preinit wraps the upstream image entrypoint with [`testcontainer-entrypoint.sh`](core/src/main/resources/docker/testcontainer-entrypoint.sh) and mounts tmpfs on data-directory `VOLUMES` for snapshot/restore (see [How it works](#how-it-works)). The factory needs each image's `ENTRYPOINT`, `CMD`, and `VOLUMES` to wire that correctly. **You can skip this** if you use a bundled DB module and a supported image tag.
+
+This is upstream Docker image invocation data — not Maven or project metadata.
 
 The value type is [`ContainerMetadata`](core/src/main/java/by/macmonitor/preinittestcontainers/ContainerMetadata.java): `entrypoint`, `entrypointPath`, `cmd`, and `volumes`. [`getTmpFs()`](core/src/main/java/by/macmonitor/preinittestcontainers/ContainerMetadata.java) derives default tmpfs mounts from `volumes` (e.g. `/var/lib/mysql` for MySQL).
 
@@ -264,14 +298,15 @@ record.0.volumes=/var/lib/mysql
 
 ```mermaid
 flowchart TD
-    command[CreateContainerCommand]
-    command -->|"getMetadata() set?"| explicitMeta[Use explicit ContainerMetadata]
-    command -->|no| registry[ContainerMetadataRegistry.find]
-    registry -->|found| bundledMeta[Bundled .metadata file]
-    registry -->|empty| inspect[DockerImageMetadataInspector.inspect]
-    explicitMeta --> wrap[Wrap with testcontainer-entrypoint.sh]
-    bundledMeta --> wrap
-    inspect --> wrap
+    cmd["CreateContainerCommand"]
+    cmd --> q1{"Explicit metadata?"}
+    q1 -->|Yes| meta["ContainerMetadata"]
+    q1 -->|No| reg["ContainerMetadataRegistry.find"]
+    reg --> q2{"Bundled .metadata?"}
+    q2 -->|Yes| meta
+    q2 -->|No| inspect["Docker inspect fallback"]
+    inspect --> meta
+    meta --> wrap["Wrap with testcontainer-entrypoint.sh"]
 ```
 
 Version matching ([`MetadataFile.resolve`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/MetadataFile.java)): `latest` or empty tag → highest `endVersion` record; in-range tag → matching record; tag newer than max → max record; tag older than min → inspect fallback.
@@ -305,7 +340,7 @@ Resolution ([`GenericContainerFactory.createPreinitialized`](core/src/main/java/
 
 Changing init scripts, env vars, credentials, or classpath mappings produces a new image name. `preInitialized=false` does **not** affect the hash (stock path skips commit).
 
-### Extension points
+## Extension points
 
 | Interface | When to use |
 |-----------|-------------|
@@ -318,14 +353,17 @@ Changing init scripts, env vars, credentials, or classpath mappings produces a n
 | [`DockerImageMetadataInspector`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/DockerImageMetadataInspector.java) | Replace live Docker inspect fallback |
 | [`ImageCreationLockService`](core/src/main/java/by/macmonitor/preinittestcontainers/ImageCreationLockService.java) | Customize cross-process build locking |
 
-[`ContainerMetadata`](core/src/main/java/by/macmonitor/preinittestcontainers/ContainerMetadata.java) is the value type for `withMetadata`. Module extension is typically done by subclassing [`GenericContainerFactory`](core/src/main/java/by/macmonitor/preinittestcontainers/GenericContainerFactory.java) and [`GenericContainerEndImageNameCalculator`](core/src/main/java/by/macmonitor/preinittestcontainers/endimagename/GenericContainerEndImageNameCalculator.java) rather than adding new interfaces under `modules/`.
+Module extension is typically done by subclassing [`GenericContainerFactory`](core/src/main/java/by/macmonitor/preinittestcontainers/GenericContainerFactory.java) and [`GenericContainerEndImageNameCalculator`](core/src/main/java/by/macmonitor/preinittestcontainers/endimagename/GenericContainerEndImageNameCalculator.java) rather than adding new interfaces under `modules/`. For image metadata details, see [Image metadata](#image-metadata).
 
-## Examples and license
+## Examples
 
 Runnable examples live under [examples/](examples/). From that directory:
 
 ```bash
+./gradlew :example-preinit-testcontainers:test
 ./gradlew :example-preinit-testcontainers-mysql:test
 ```
+
+## License
 
 Licensed under [MIT](LICENSE).
