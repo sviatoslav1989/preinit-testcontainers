@@ -11,9 +11,9 @@ Faster [Testcontainers](https://java.testcontainers.org/) integration tests by b
 
 Testcontainers starts fresh containers on every test run. Each cold start pays a high cost: image pull, process boot, and initialization (SQL scripts, migrations, custom setup).
 
-**preinit-testcontainers** addresses that by:
+**preinit-testcontainers** addresses initialization by:
 
-- On first use, starting a **temporary** container, running your init (JDBC scripts, [`PreInitStartCallback`](core/src/main/java/by/macmonitor/preinittestcontainers/PreInitStartCallback.java), etc.), then **committing** a local end image with a deterministic name (hash of config).
+- On first use, starting a **temporary** container, running your init (JDBC scripts, [`PreInitStartCallback`](core/src/main/java/by/macmonitor/preinittestcontainers/PreInitStartCallback.java), etc.), then **committing** a local end image with a deterministic name ([hash of config](#end-image-naming)).
 - On later starts, using that baked image instead of cold-starting from upstream.
 - Using a bundled entrypoint ([`testcontainer-entrypoint.sh`](core/src/main/resources/docker/testcontainer-entrypoint.sh)) with **tmpfs snapshot/restore** so mutable data dirs (e.g. MySQL `/var/lib/mysql`) stay fast while reflecting pre-baked state.
 - Using **cross-process file locking** so parallel test workers do not rebuild the same image twice.
@@ -230,10 +230,95 @@ Init-heavy workloads show the largest gains; empty DB still benefits from pre-ba
 ## Advanced
 
 - **First-run cost:** The initial start builds and commits the end image. Steady-state `start()` times match the benchmark "Preinit" rows above.
-- **Parallel CI:** Locking is built-in; tune via `ImageCreationLockOption` if needed.
+- **Parallel CI:** Cross-process locking via [`ImageCreationLockService`](core/src/main/java/by/macmonitor/preinittestcontainers/ImageCreationLockService.java) is built-in; tune via [`ImageCreationLockOption`](core/src/main/java/by/macmonitor/preinittestcontainers/ImageCreationLockOption.java) if needed (see [Extension points](#extension-points)).
 - **Disable pre-init:** `.withPreInitialized(false)` for stock Testcontainers behavior.
 - **Spring Boot:** See [examples/spring-boot-mysql](examples/spring-boot-mysql) (BOM import, exclude Testcontainers from `spring-boot-starter-test`).
 - **Building from source:** `./gradlew build` (Java 21 toolchain for dev; published JAR is Java 8).
+
+### Metadata
+
+**Metadata** is upstream Docker image invocation data — `ENTRYPOINT`, `CMD`, and data-directory `VOLUMES` — required to wrap the library entrypoint and configure tmpfs snapshot/restore. It is **not** Maven or project metadata.
+
+The value type is [`ContainerMetadata`](core/src/main/java/by/macmonitor/preinittestcontainers/ContainerMetadata.java): `entrypoint`, `entrypointPath`, `cmd`, and `volumes`. [`getTmpFs()`](core/src/main/java/by/macmonitor/preinittestcontainers/ContainerMetadata.java) derives default tmpfs mounts from `volumes` (e.g. `/var/lib/mysql` for MySQL).
+
+#### Bundled files
+
+Database modules ship version-ranged properties files on the classpath, e.g. [`mysql.metadata`](modules/mysql/src/main/resources/preinit-testcontainers/metadata/mysql.metadata) at `preinit-testcontainers/metadata/{repo-last-segment}.metadata` (`mysql:8.0.45` → `mysql.metadata`).
+
+```properties
+record.0.startVersion=5.5
+record.0.endVersion=9.7
+record.0.entrypointPath=/usr/local/bin/docker-entrypoint.sh
+record.0.entrypoint=docker-entrypoint.sh
+record.0.cmd=mysqld
+record.0.volumes=/var/lib/mysql
+```
+
+#### Resolution order
+
+[`GenericContainerFactory.resolveMetadata`](core/src/main/java/by/macmonitor/preinittestcontainers/GenericContainerFactory.java) picks metadata in this order:
+
+1. Explicit [`withMetadata(...)`](core/src/main/java/by/macmonitor/preinittestcontainers/CreateContainerCommandBuilder.java) on the command
+2. [`ContainerMetadataRegistry.find`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/ContainerMetadataRegistry.java) — default [`FileBasedContainerMetadataRegistry`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/FileBasedContainerMetadataRegistry.java) loads bundled `.metadata` files
+3. [`DockerImageMetadataInspector.inspect`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/DockerImageMetadataInspector.java) — live `docker inspect` when no bundled file matches
+
+```mermaid
+flowchart TD
+    command[CreateContainerCommand]
+    command -->|"getMetadata() set?"| explicitMeta[Use explicit ContainerMetadata]
+    command -->|no| registry[ContainerMetadataRegistry.find]
+    registry -->|found| bundledMeta[Bundled .metadata file]
+    registry -->|empty| inspect[DockerImageMetadataInspector.inspect]
+    explicitMeta --> wrap[Wrap with testcontainer-entrypoint.sh]
+    bundledMeta --> wrap
+    inspect --> wrap
+```
+
+Version matching ([`MetadataFile.resolve`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/MetadataFile.java)): `latest` or empty tag → highest `endVersion` record; in-range tag → matching record; tag newer than max → max record; tag older than min → inspect fallback.
+
+#### Override
+
+For custom or unsupported images without a bundled `.metadata` file, set metadata explicitly via [`CreateContainerCommandBuilder.withMetadata`](core/src/main/java/by/macmonitor/preinittestcontainers/CreateContainerCommandBuilder.java).
+
+### End image naming
+
+The committed local image name is **deterministic** so identical configuration reuses the cache. Any input that changes image contents must affect the hash.
+
+Resolution ([`GenericContainerFactory.createPreinitialized`](core/src/main/java/by/macmonitor/preinittestcontainers/GenericContainerFactory.java)):
+
+1. Explicit [`withEndImageName(...)`](core/src/main/java/by/macmonitor/preinittestcontainers/CreateContainerCommandBuilder.java) wins
+2. Otherwise [`ContainerEndImageNameCalculator.calculate`](core/src/main/java/by/macmonitor/preinittestcontainers/endimagename/ContainerEndImageNameCalculator.java) — default [`GenericContainerEndImageNameCalculator`](core/src/main/java/by/macmonitor/preinittestcontainers/endimagename/GenericContainerEndImageNameCalculator.java)
+
+#### Default hash algorithm
+
+**String inputs** (in order): `cmdParameters`, environment variables (`key=value`, keys sorted), `privileged=...`, `callback.uniqueKey()` when a [`PreInitStartCallback`](core/src/main/java/by/macmonitor/preinittestcontainers/PreInitStartCallback.java) is set.
+
+**File inputs** (in order): [`docker/testcontainer-entrypoint.sh`](core/src/main/resources/docker/testcontainer-entrypoint.sh), then each `classpathResourceMapping` path — for each path, hash path bytes plus raw classpath file bytes.
+
+**Digest:** MD5 over concatenated inputs (no delimiters between string params; `null` → literal `"null"`).
+
+**Format:** `{prefix}-{baseImageName}.{first8HexChars}` — e.g. `test-mysql:8.0.45.a1b2c3d4` (prefix `"test"`).
+
+#### JDBC modules
+
+[`JdbcEndImageNameCalculator`](modules/jdbc/src/main/java/by/macmonitor/preinittestcontainers/endimagename/JdbcEndImageNameCalculator.java) extends the default: prefix = `dbName`; extra string hash of `dbName`, `username`, `password`; extra file hash of `initScripts`.
+
+Changing init scripts, env vars, credentials, or classpath mappings produces a new image name. `preInitialized=false` does **not** affect the hash (stock path skips commit).
+
+### Extension points
+
+| Interface | When to use |
+|-----------|-------------|
+| [`ContainerFactory`](core/src/main/java/by/macmonitor/preinittestcontainers/ContainerFactory.java) | Entry point: `create(command)` |
+| [`CreateContainerCommand`](core/src/main/java/by/macmonitor/preinittestcontainers/CreateContainerCommand.java) | Read-side command contract |
+| [`CreateContainerCommandBuilder`](core/src/main/java/by/macmonitor/preinittestcontainers/CreateContainerCommandBuilder.java) | Fluent builder (`withBaseImageName`, `withMetadata`, `withEndImageName`, …) |
+| [`PreInitStartCallback`](core/src/main/java/by/macmonitor/preinittestcontainers/PreInitStartCallback.java) | Custom init during image build |
+| [`ContainerEndImageNameCalculator`](core/src/main/java/by/macmonitor/preinittestcontainers/endimagename/ContainerEndImageNameCalculator.java) | Custom hashing for new container modules |
+| [`ContainerMetadataRegistry`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/ContainerMetadataRegistry.java) | Custom metadata lookup |
+| [`DockerImageMetadataInspector`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/DockerImageMetadataInspector.java) | Replace live Docker inspect fallback |
+| [`ImageCreationLockService`](core/src/main/java/by/macmonitor/preinittestcontainers/ImageCreationLockService.java) | Customize cross-process build locking |
+
+[`ContainerMetadata`](core/src/main/java/by/macmonitor/preinittestcontainers/ContainerMetadata.java) is the value type for `withMetadata`. Module extension is typically done by subclassing [`GenericContainerFactory`](core/src/main/java/by/macmonitor/preinittestcontainers/GenericContainerFactory.java) and [`GenericContainerEndImageNameCalculator`](core/src/main/java/by/macmonitor/preinittestcontainers/endimagename/GenericContainerEndImageNameCalculator.java) rather than adding new interfaces under `modules/`.
 
 ## Examples and license
 
