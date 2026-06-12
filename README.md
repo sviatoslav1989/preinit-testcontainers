@@ -9,13 +9,13 @@ Faster [Testcontainers](https://java.testcontainers.org/) integration tests by b
 
 ## What and why
 
-Testcontainers starts fresh containers on every test run. Databases pay a high cost: image pull, process boot, and schema/data initialization (SQL scripts, migrations).
+Testcontainers starts fresh containers on every test run. Each cold start pays a high cost: image pull, process boot, and initialization (SQL scripts, migrations, custom setup).
 
 **preinit-testcontainers** addresses that by:
 
-- On first use, starting a **temporary** container, running your init (JDBC scripts, `PreInitStartCallback`, etc.), then **committing** a local end image with a deterministic name (hash of config).
+- On first use, starting a **temporary** container, running your init (JDBC scripts, [`PreInitStartCallback`](core/src/main/java/by/macmonitor/preinittestcontainers/PreInitStartCallback.java), etc.), then **committing** a local end image with a deterministic name (hash of config).
 - On later starts, using that baked image instead of cold-starting from upstream.
-- Using a bundled entrypoint (`testcontainer-entrypoint.sh`) with **tmpfs snapshot/restore** so mutable data dirs (e.g. MySQL `/var/lib/mysql`) stay fast while reflecting pre-baked state.
+- Using a bundled entrypoint ([`testcontainer-entrypoint.sh`](core/src/main/resources/docker/testcontainer-entrypoint.sh)) with **tmpfs snapshot/restore** so mutable data dirs (e.g. MySQL `/var/lib/mysql`) stay fast while reflecting pre-baked state.
 - Using **cross-process file locking** so parallel test workers do not rebuild the same image twice.
 
 **When to use it:**
