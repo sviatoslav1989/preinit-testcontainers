@@ -1,4 +1,6 @@
-version = '2.0.0-SNAPSHOT'
+apply from: 'gradle/preinit-consumer-version.gradle'
+
+version = resolvePreinitConsumerVersion(project)
 
 subprojects {
     apply plugin: 'java-library'
