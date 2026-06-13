@@ -49,6 +49,16 @@ tasks.named('compileTestJava', JavaCompile) {
     options.release.set(21)
 }
 
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+    options.addStringOption('Xdoclint:-missing', '-quiet')
+    options.source = '8'
+    options.links(
+        'https://docs.oracle.com/javase/8/docs/api/',
+        'https://javadoc.io/doc/org.testcontainers/testcontainers/latest/'
+    )
+}
+
 spotless {
     enforceCheck false
 
