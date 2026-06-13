@@ -10,7 +10,7 @@ mavenPublishing {
         name = project.name
         description = project.description
         inceptionYear = '2026'
-        url = 'https://github.com/sviatoslav1989/preinit-container'
+        url = 'https://github.com/sviatoslav1989/preinit-testcontainers'
         licenses {
             license {
                 name = 'MIT License'
@@ -26,9 +26,9 @@ mavenPublishing {
             }
         }
         scm {
-            url = 'https://github.com/sviatoslav1989/preinit-container'
-            connection = 'scm:git:git://github.com/sviatoslav1989/preinit-container.git'
-            developerConnection = 'scm:git:ssh://git@github.com/sviatoslav1989/preinit-container.git'
+            url = 'https://github.com/sviatoslav1989/preinit-testcontainers'
+            connection = 'scm:git:git://github.com/sviatoslav1989/preinit-testcontainers.git'
+            developerConnection = 'scm:git:ssh://git@github.com/sviatoslav1989/preinit-testcontainers.git'
         }
     }
 }

@@ -69,9 +69,9 @@ sequenceDiagram
 
 ## Installation
 
-Coordinates: `by.macmonitor` / `2.0.0-SNAPSHOT`.
+Coordinates: `by.macmonitor` / `<version>` (any dotted release, e.g. `2.0`, `2.0.0`, `2.0.0.1`).
 
-While the version is `-SNAPSHOT`, add the Central snapshots repository. Use **`test`** / **`testImplementation`** scope in normal apps (`src/main` + `src/test`). The [examples](examples/) use `implementation` only because those modules are test-only sample projects.
+Artifacts are published to Maven Central. Use **`test`** / **`testImplementation`** scope in normal apps (`src/main` + `src/test`). The [examples](examples/) use `implementation` only because those modules are test-only sample projects.
 
 ### Modules
 
@@ -89,15 +89,6 @@ Each DB module pulls its Testcontainers counterpart transitively via `api`.
 ### Maven
 
 ```xml
-<repositories>
-  <repository>
-    <id>central-snapshots</id>
-    <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-    <snapshots><enabled>true</enabled></snapshots>
-    <releases><enabled>false</enabled></releases>
-  </repository>
-</repositories>
-
 <dependencyManagement>
   <dependencies>
     <dependency>
@@ -115,7 +106,7 @@ Each DB module pulls its Testcontainers counterpart transitively via `api`.
   <dependency>
     <groupId>by.macmonitor</groupId>
     <artifactId>preinit-testcontainers-mysql</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.0.0</version>
     <scope>test</scope>
   </dependency>
   <!-- JDBC driver for the DB module (test scope) -->
@@ -143,16 +134,12 @@ Each DB module pulls its Testcontainers counterpart transitively via `api`.
 ```groovy
 repositories {
     mavenCentral()
-    maven {
-        url = uri("https://central.sonatype.com/repository/maven-snapshots/")
-        mavenContent { snapshotsOnly() }
-    }
 }
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
     // Pick one preinit module (see Modules table above)
-    testImplementation "by.macmonitor:preinit-testcontainers-mysql:2.0.0-SNAPSHOT"
+    testImplementation "by.macmonitor:preinit-testcontainers-mysql:2.0.0"
     testImplementation "com.mysql:mysql-connector-j:9.6.0"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"

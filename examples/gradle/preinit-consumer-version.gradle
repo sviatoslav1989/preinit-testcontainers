@@ -1,0 +1,24 @@
+ext.resolvePreinitConsumerVersion = { context ->
+    def gradle = context.gradle
+    def baseDir = context instanceof Settings ? context.settingsDir : context.rootProject.projectDir
+
+    def cliOverride = gradle.startParameter.projectProperties['preinitVersion']
+    if (cliOverride != null) {
+        return cliOverride.toString()
+    }
+
+    def examplesPropsFile = new File(baseDir, 'gradle.properties')
+    if (examplesPropsFile.exists()) {
+        def examplesProps = new Properties()
+        examplesPropsFile.withInputStream { examplesProps.load(it) }
+        def fromExamples = examplesProps.getProperty('preinitVersion')
+        if (fromExamples != null) {
+            return fromExamples
+        }
+    }
+
+    def parentPropsFile = new File(baseDir.parentFile, 'gradle.properties')
+    def parentProps = new Properties()
+    parentPropsFile.withInputStream { parentProps.load(it) }
+    return parentProps.getProperty('version')
+}

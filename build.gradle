@@ -3,7 +3,24 @@ plugins {
 }
 
 group = 'by.macmonitor'
-version = '2.0.0-SNAPSHOT'
+
+def publishableSubprojects = subprojects.findAll { it.name.startsWith('preinit-testcontainers') }
+
+tasks.register('publishArtifacts') {
+    group = 'publishing'
+    description = 'Publishes all library artifacts to Maven Central (snapshot or release, based on version suffix).'
+}
+
+gradle.projectsEvaluated {
+    def publishTaskName = version.toString().endsWith('-SNAPSHOT')
+        ? 'publishToMavenCentral'
+        : 'publishAndReleaseToMavenCentral'
+    publishableSubprojects.each { sub ->
+        tasks.named('publishArtifacts').configure {
+            dependsOn sub.tasks.named(publishTaskName)
+        }
+    }
+}
 
 spotless {
     enforceCheck false
