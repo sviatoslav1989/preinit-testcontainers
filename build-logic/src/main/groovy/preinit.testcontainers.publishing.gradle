@@ -22,7 +22,7 @@ mavenPublishing {
             developer {
                 id = 'sviatoslav1989'
                 name = 'Sviataslau Apanasionak'
-                email = 'sviato_slav1989@protonmail.com'
+                email = 'apanasionak.si@gmail.com'
             }
         }
         scm {
