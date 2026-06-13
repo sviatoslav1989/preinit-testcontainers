@@ -41,6 +41,13 @@ def delombokTask = tasks.named('delombok')
 def compileJavaTask = tasks.named('compileJava', JavaCompile)
 def jarTask = tasks.named('jar', Jar)
 
+// Delomboked artifacts:
+// - sourcesJar: explicit override below (FreeFair does not wire sourcesJar to delombok)
+// - javadoc / plainJavadocJar: delombok via io.freefair.lombok in java-library plugin
+tasks.named('javadoc', Javadoc).configure {
+    dependsOn delombokTask
+}
+
 def compilePublishedJava = tasks.register('compilePublishedJava', JavaCompile) {
     dependsOn delombokTask
     source = delombokTask.flatMap { it.target }
@@ -85,12 +92,14 @@ afterEvaluate {
         }
     }
 
+    def plainJavadocJarTask = tasks.named('plainJavadocJar')
+
     tasks.withType(PublishToMavenRepository).configureEach {
-        dependsOn publishedJar
+        dependsOn publishedJar, plainJavadocJarTask
     }
 
     tasks.matching { it.name in ['publishToMavenCentral', 'publishAndReleaseToMavenCentral', 'publishToMavenLocal'] }.configureEach {
-        dependsOn publishedJar
+        dependsOn publishedJar, plainJavadocJarTask
     }
 
     tasks.named('generateMetadataFileForMavenPublication').configure {
