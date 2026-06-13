@@ -298,15 +298,15 @@ record.0.volumes=/var/lib/mysql
 
 ```mermaid
 flowchart TD
-    cmd["CreateContainerCommand"]
-    cmd --> q1{"Explicit metadata?"}
-    q1 -->|Yes| meta["ContainerMetadata"]
-    q1 -->|No| reg["ContainerMetadataRegistry.find"]
-    reg --> q2{"Bundled .metadata?"}
+    cmd["CreateContainer<br/>Command"]
+    cmd --> q1{"Explicit<br/>metadata?"}
+    q1 -->|Yes| meta["Container<br/>Metadata"]
+    q1 -->|No| reg["Metadata registry<br/>.find()"]
+    reg --> q2{"Bundled<br/>.metadata?"}
     q2 -->|Yes| meta
-    q2 -->|No| inspect["Docker inspect fallback"]
+    q2 -->|No| inspect["Docker<br/>inspect"]
     inspect --> meta
-    meta --> wrap["Wrap with testcontainer-entrypoint.sh"]
+    meta --> wrap["Wrap entrypoint<br/>+ tmpfs"]
 ```
 
 Version matching ([`MetadataFile.resolve`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/MetadataFile.java)): `latest` or empty tag → highest `endVersion` record; in-range tag → matching record; tag newer than max → max record; tag older than min → inspect fallback.
