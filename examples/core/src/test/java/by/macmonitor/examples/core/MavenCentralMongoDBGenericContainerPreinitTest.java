@@ -9,12 +9,16 @@ import by.macmonitor.preinittestcontainers.support.TimedContainerStart;
 
 import com.github.dockerjava.api.DockerClient;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
+@Slf4j
 class MavenCentralMongoDBGenericContainerPreinitTest {
 
     @Test
@@ -24,6 +28,7 @@ class MavenCentralMongoDBGenericContainerPreinitTest {
                 .withBaseImageName("mongo:7.0")
                 .withExposedPorts(27017)
                 .waitingFor(Wait.forListeningPort())
+                .withLogConsumer(new Slf4jLogConsumer(log))
                 .withAfterPreInitStartCallback(PreInitStartCallback.of(
                         "mongo-seed-v1",
                         container -> {
