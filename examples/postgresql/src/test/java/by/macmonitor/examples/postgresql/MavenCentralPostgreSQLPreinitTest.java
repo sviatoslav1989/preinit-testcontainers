@@ -10,7 +10,7 @@ import com.github.dockerjava.api.DockerClient;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
