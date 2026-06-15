@@ -21,8 +21,8 @@ class RedisEndImageNameCalculatorTest {
                 .build();
         CreateRedisContainerCommand withMapping = baseline.toBuilder()
                 .withClasspathResourceMappings(List.of(ClasspathResourceMappingCommand.builder()
-                        .withClasspathResourcePath("redis/init.data.expected.sql")
-                        .withContainerPath("/docker-entrypoint-initdb.d/data.sql")
+                        .withClasspathResourcePath("redis/custom.conf")
+                        .withContainerPath("/usr/local/etc/redis/redis.conf")
                         .build()))
                 .build();
 

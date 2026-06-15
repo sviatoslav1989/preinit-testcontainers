@@ -10,7 +10,7 @@ mavenPublishing {
         name = project.name
         description = project.description
         inceptionYear = '2026'
-        url = 'https://github.com/sviatoslav1989/preinit-container'
+        url = 'https://github.com/sviatoslav1989/preinit-testcontainers'
         licenses {
             license {
                 name = 'MIT License'
@@ -22,13 +22,13 @@ mavenPublishing {
             developer {
                 id = 'sviatoslav1989'
                 name = 'Sviataslau Apanasionak'
-                email = 'sviato_slav1989@protonmail.com'
+                email = 'apanasionak.si@gmail.com'
             }
         }
         scm {
-            url = 'https://github.com/sviatoslav1989/preinit-container'
-            connection = 'scm:git:git://github.com/sviatoslav1989/preinit-container.git'
-            developerConnection = 'scm:git:ssh://git@github.com/sviatoslav1989/preinit-container.git'
+            url = 'https://github.com/sviatoslav1989/preinit-testcontainers'
+            connection = 'scm:git:git://github.com/sviatoslav1989/preinit-testcontainers.git'
+            developerConnection = 'scm:git:ssh://git@github.com/sviatoslav1989/preinit-testcontainers.git'
         }
     }
 }
@@ -40,6 +40,13 @@ signing {
 def delombokTask = tasks.named('delombok')
 def compileJavaTask = tasks.named('compileJava', JavaCompile)
 def jarTask = tasks.named('jar', Jar)
+
+// Delomboked artifacts:
+// - sourcesJar: explicit override below (FreeFair does not wire sourcesJar to delombok)
+// - javadoc / plainJavadocJar: delombok via io.freefair.lombok in java-library plugin
+tasks.named('javadoc', Javadoc).configure {
+    dependsOn delombokTask
+}
 
 def compilePublishedJava = tasks.register('compilePublishedJava', JavaCompile) {
     dependsOn delombokTask
@@ -85,12 +92,14 @@ afterEvaluate {
         }
     }
 
+    def plainJavadocJarTask = tasks.named('plainJavadocJar')
+
     tasks.withType(PublishToMavenRepository).configureEach {
-        dependsOn publishedJar
+        dependsOn publishedJar, plainJavadocJarTask
     }
 
     tasks.matching { it.name in ['publishToMavenCentral', 'publishAndReleaseToMavenCentral', 'publishToMavenLocal'] }.configureEach {
-        dependsOn publishedJar
+        dependsOn publishedJar, plainJavadocJarTask
     }
 
     tasks.named('generateMetadataFileForMavenPublication').configure {

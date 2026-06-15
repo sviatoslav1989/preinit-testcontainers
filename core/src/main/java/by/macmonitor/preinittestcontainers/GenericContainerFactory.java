@@ -271,7 +271,7 @@ public class GenericContainerFactory<
      * @param tempBuildFlow {@code true} while building the committed image, {@code false} at
      *     runtime
      */
-    protected final void applyPersistEntrypoint(T container, C command, boolean tempBuildFlow) {
+    protected void applyPersistEntrypoint(T container, C command, boolean tempBuildFlow) {
         ContainerMetadata metadata = resolveMetadata(command);
         container.withEnv(buildPersistEnv(command, metadata, tempBuildFlow));
         List<String> entrypoint =
@@ -316,7 +316,7 @@ public class GenericContainerFactory<
      * @param metadata resolved upstream image metadata (may be {@code null})
      * @return effective tmpfs list, never {@code null}
      */
-    protected final List<TmpFsSystemCommand> resolveEffectiveTmpFsFilesystems(
+    protected List<TmpFsSystemCommand> resolveEffectiveTmpFsFilesystems(
             C command, ContainerMetadata metadata) {
         List<TmpFsSystemCommand> explicit = command.getTmpFsFilesystems();
         if (!explicit.isEmpty()) {
@@ -354,7 +354,7 @@ public class GenericContainerFactory<
      *     command)
      * @return resolved metadata, never {@code null} when a base image is configured
      */
-    protected final ContainerMetadata resolveMetadata(C command) {
+    protected ContainerMetadata resolveMetadata(C command) {
         if (command.getMetadata() != null) {
             return command.getMetadata();
         }
