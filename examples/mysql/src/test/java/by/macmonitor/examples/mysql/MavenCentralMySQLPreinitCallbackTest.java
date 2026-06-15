@@ -2,6 +2,7 @@ package by.macmonitor.examples.mysql;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import by.macmonitor.preinittestcontainers.PreInitStartCallback;
 import by.macmonitor.preinittestcontainers.mysql.CreateMySQLContainerCommand;
 import by.macmonitor.preinittestcontainers.mysql.MySQLContainerFactory;
 import by.macmonitor.preinittestcontainers.support.TimedContainerStart;
@@ -10,15 +11,16 @@ import com.github.dockerjava.api.DockerClient;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.mysql.MySQLContainer;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-class MavenCentralMySQLPreinitTest {
+class MavenCentralMySQLPreinitCallbackTest {
 
     private static final List<String> CMD_PARAMETERS = List.of(
             "--character-set-server=utf8",
@@ -31,16 +33,28 @@ class MavenCentralMySQLPreinitTest {
             "--sync-binlog=0");
 
     @Test
-    void preinitializedContainerStarts() throws Exception {
+    void preinitializedContainerAppliesCallbackSeed() throws Exception {
         String imageName = null;
         CreateMySQLContainerCommand command = CreateMySQLContainerCommand.builder()
                 .withBaseImageName("mysql:8.0.45")
-                .withInitScripts(
-                        List.of("mysql/init.tables.expected.sql", "mysql/init.data.expected.sql"))
                 .withDbName("testdb")
                 .withUsername("user")
                 .withPassword("password")
                 .withCmdParameters(CMD_PARAMETERS)
+                .withAfterPreInitStartCallback(PreInitStartCallback.of(
+                        "mysql-callback-seed-v1",
+                        container -> {
+                            MySQLContainer mysql = (MySQLContainer) container;
+                            try (Connection connection = DriverManager.getConnection(
+                                            mysql.getJdbcUrl(), "user", "password");
+                                    Statement statement = connection.createStatement()) {
+                                statement.execute(
+                                        "CREATE TABLE callback_seed (id INT PRIMARY KEY)");
+                                statement.execute("INSERT INTO callback_seed (id) VALUES (42)");
+                            } catch (SQLException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }))
                 .build();
         try (MySQLContainer container = MySQLContainerFactory.createMySQLContainer(command)) {
             TimedContainerStart.start(container);
@@ -48,9 +62,9 @@ class MavenCentralMySQLPreinitTest {
             try (Connection connection = DriverManager.getConnection(
                             container.getJdbcUrl(), "user", "password");
                     Statement statement = connection.createStatement();
-                    ResultSet rs = statement.executeQuery("SELECT id FROM test")) {
+                    ResultSet rs = statement.executeQuery("SELECT id FROM callback_seed")) {
                 assertThat(rs.next()).isTrue();
-                assertThat(rs.getInt(1)).isEqualTo(1);
+                assertThat(rs.getInt(1)).isEqualTo(42);
             }
         } finally {
             if (imageName != null) {

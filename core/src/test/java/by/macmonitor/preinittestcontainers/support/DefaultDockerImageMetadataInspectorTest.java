@@ -65,6 +65,20 @@ class DefaultDockerImageMetadataInspectorTest {
         assertThat(metadata.getEntrypointPath()).isEqualTo(expectedEntrypointPath);
     }
 
+    @Test
+    void inspect_sameImageTwice_returnsCachedInstance() {
+        DefaultDockerImageMetadataInspector cachingInspector =
+                new DefaultDockerImageMetadataInspector(DockerClientFactory.lazyClient());
+
+        ContainerMetadata first = cachingInspector.inspect("mysql:8.0.45");
+        ContainerMetadata second = cachingInspector.inspect("mysql:8.0.45");
+
+        assertThat(second).isSameAs(first);
+
+        ContainerMetadata redisLatest = cachingInspector.inspect("redis:latest");
+        assertThat(cachingInspector.inspect("redis")).isSameAs(redisLatest);
+    }
+
     static Stream<Arguments> imageMetadataCases() {
         return Stream.of(
                 Arguments.of(
