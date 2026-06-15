@@ -186,7 +186,7 @@ try (MySQLContainer container = MySQLContainerFactory.createMySQLContainer(comma
 Use the core [`preinit-testcontainers`](core/) artifact with [`GenericContainerFactory.createGenericContainer()`](core/src/main/java/by/macmonitor/preinittestcontainers/GenericContainerFactory.java) for images without a bundled module:
 
 ```groovy
-testImplementation "by.macmonitor:preinit-testcontainers:2.0.0-SNAPSHOT"
+testImplementation "by.macmonitor:preinit-testcontainers:2.0.0"
 testImplementation "org.testcontainers:testcontainers-junit-jupiter"
 ```
 
