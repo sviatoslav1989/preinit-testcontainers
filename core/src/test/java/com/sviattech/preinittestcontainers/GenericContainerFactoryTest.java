@@ -22,7 +22,6 @@ import com.sviattech.preinittestcontainers.postgresql.PostgreSQLContainerFactory
 import com.sviattech.preinittestcontainers.redis.CreateRedisContainerCommand;
 import com.sviattech.preinittestcontainers.redis.RedisContainerFactory;
 import com.sviattech.preinittestcontainers.support.ColonSeparatedArgvUtils;
-import com.sviattech.preinittestcontainers.support.FileBasedImageCreationLockService;
 
 import lombok.Builder;
 import lombok.experimental.SuperBuilder;

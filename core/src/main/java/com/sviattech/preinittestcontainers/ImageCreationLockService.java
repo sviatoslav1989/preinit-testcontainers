@@ -1,7 +1,5 @@
 package com.sviattech.preinittestcontainers;
 
-import com.sviattech.preinittestcontainers.support.FileBasedImageCreationLockService;
-
 import java.util.function.Consumer;
 
 /**

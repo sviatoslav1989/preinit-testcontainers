@@ -10,7 +10,6 @@ import com.sviattech.preinittestcontainers.metadata.DefaultDockerImageMetadataIn
 import com.sviattech.preinittestcontainers.metadata.DockerImageMetadataInspector;
 import com.sviattech.preinittestcontainers.metadata.FileBasedContainerMetadataRegistry;
 import com.sviattech.preinittestcontainers.support.ColonSeparatedArgvUtils;
-import com.sviattech.preinittestcontainers.support.FileBasedImageCreationLockService;
 import com.sviattech.preinittestcontainers.support.TimedContainerStart;
 
 import lombok.AccessLevel;

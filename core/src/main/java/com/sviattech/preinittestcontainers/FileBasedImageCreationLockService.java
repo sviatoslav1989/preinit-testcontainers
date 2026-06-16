@@ -1,8 +1,4 @@
-package com.sviattech.preinittestcontainers.support;
-
-import com.sviattech.preinittestcontainers.GenericContainerFactory;
-import com.sviattech.preinittestcontainers.ImageCreationLockOption;
-import com.sviattech.preinittestcontainers.ImageCreationLockService;
+package com.sviattech.preinittestcontainers;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
