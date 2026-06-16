@@ -5,7 +5,7 @@ version = resolvePreinitConsumerVersion(project)
 subprojects {
     apply plugin: 'java-library'
 
-    group = 'by.macmonitor.examples'
+    group = 'com.sviattech.examples'
 
     def tcBomVersion = libs.versions.testcontainersBom
 
