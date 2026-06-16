@@ -1,7 +1,7 @@
 description = 'example :: preinit-testcontainers-postgresql (Maven Central consumer)'
 
 dependencies {
-	implementation "by.macmonitor:preinit-testcontainers-postgresql:${rootProject.version}"
+	implementation "com.sviat-tech:preinit-testcontainers-postgresql:${rootProject.version}"
 
 	testImplementation libs.postgresql.jdbc
 }
