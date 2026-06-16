@@ -113,7 +113,7 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -136,7 +136,7 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-jdbc</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <!-- your JDBC driver -->
@@ -160,7 +160,7 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-mysql</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -189,7 +189,7 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-postgresql</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -218,7 +218,7 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-clickhouse</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -247,7 +247,7 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-redis</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -274,7 +274,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers:2.0.1"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
 }
@@ -289,7 +289,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers-jdbc:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers-jdbc:2.0.1"
     // your JDBC driver
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -305,7 +305,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers-mysql:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers-mysql:2.0.1"
     testImplementation "com.mysql:mysql-connector-j:9.6.0"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -321,7 +321,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers-postgresql:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers-postgresql:2.0.1"
     testImplementation "org.postgresql:postgresql:42.7.5"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -337,7 +337,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers-clickhouse:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers-clickhouse:2.0.1"
     testImplementation "com.clickhouse:clickhouse-jdbc:0.9.8"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -353,7 +353,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers-redis:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers-redis:2.0.1"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
 }
@@ -399,7 +399,7 @@ try (MySQLContainer container = MySQLContainerFactory.createMySQLContainer(comma
 Use the core [`preinit-testcontainers`](core/) artifact with [`GenericContainerFactory.createGenericContainer()`](core/src/main/java/com/sviattech/preinittestcontainers/GenericContainerFactory.java) for images without a bundled module:
 
 ```groovy
-testImplementation "com.sviat-tech:preinit-testcontainers:2.0.0-SNAPSHOT"
+testImplementation "com.sviat-tech:preinit-testcontainers:2.0.1"
 testImplementation "org.testcontainers:testcontainers-junit-jupiter"
 ```
 
