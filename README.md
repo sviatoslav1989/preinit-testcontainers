@@ -7,6 +7,8 @@ Faster [Testcontainers](https://java.testcontainers.org/) integration tests by b
 
 **Repository:** [github.com/sviatoslav1989/preinit-testcontainers](https://github.com/sviatoslav1989/preinit-testcontainers)
 
+**Blog article:** [Integration tests in Java: speeding up Testcontainers with tmpfs and pre-initialization](https://sviat-tech.com/integration-tests-java-testcontainers-tmpfs-preinit/)
+
 **Contents:** [What and why](#what-and-why) · [How it works](#how-it-works) · [Prerequisites](#prerequisites) · [Installation](#installation) · [Quick start](#quick-start) · [Tips](#tips) · [Performance](#performance) · [Internals](#internals) · [Extension points](#extension-points) · [Examples](#examples)
 
 ## What and why
@@ -15,7 +17,7 @@ Testcontainers starts fresh containers on every test run. Each cold start pays a
 
 **preinit-testcontainers** addresses initialization by:
 
-- On first use, starting a **temporary** container, running your init (JDBC scripts, [`PreInitStartCallback`](core/src/main/java/by/macmonitor/preinittestcontainers/PreInitStartCallback.java), etc.), then **committing** a local end image with a deterministic name ([hash of config](#end-image-naming)).
+- On first use, starting a **temporary** container, running your init (JDBC scripts, [`PreInitStartCallback`](core/src/main/java/com/sviattech/preinittestcontainers/PreInitStartCallback.java), etc.), then **committing** a local end image with a deterministic name ([hash of config](#end-image-naming)).
 - On later starts, using that baked image instead of cold-starting from upstream.
 - Using a bundled entrypoint ([`testcontainer-entrypoint.sh`](core/src/main/resources/docker/testcontainer-entrypoint.sh)) with **tmpfs snapshot/restore** so mutable data dirs (e.g. MySQL `/var/lib/mysql`) stay fast while reflecting pre-baked state.
 - Using **cross-process file locking** so parallel test workers do not rebuild the same image twice.
@@ -69,7 +71,7 @@ sequenceDiagram
 
 ## Installation
 
-Coordinates: `by.macmonitor` / `<version>` (any dotted release, e.g. `2.0`, `2.0.0`, `2.0.0.1`).
+Coordinates: `com.sviat-tech` / `<version>` (any dotted release, e.g. `2.0`, `2.0.0`, `2.0.0.1`).
 
 Artifacts are published to Maven Central. Use **`test`** / **`testImplementation`** scope in normal apps (`src/main` + `src/test`). The [examples](examples/) use `implementation` only because those modules are test-only sample projects.
 
@@ -104,7 +106,7 @@ Each DB module pulls its Testcontainers counterpart transitively via `api`.
 <dependencies>
   <!-- Pick one preinit module (see Modules table above) -->
   <dependency>
-    <groupId>by.macmonitor</groupId>
+    <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-mysql</artifactId>
     <version>2.0.0</version>
     <scope>test</scope>
@@ -139,7 +141,7 @@ repositories {
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
     // Pick one preinit module (see Modules table above)
-    testImplementation "by.macmonitor:preinit-testcontainers-mysql:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers-mysql:2.0.0"
     testImplementation "com.mysql:mysql-connector-j:9.6.0"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -155,9 +157,9 @@ dependencies {
 ### MySQL (bundled module)
 
 ```java
-import by.macmonitor.preinittestcontainers.PreInitStartCallback;
-import by.macmonitor.preinittestcontainers.mysql.CreateMySQLContainerCommand;
-import by.macmonitor.preinittestcontainers.mysql.MySQLContainerFactory;
+import com.sviattech.preinittestcontainers.PreInitStartCallback;
+import com.sviattech.preinittestcontainers.mysql.CreateMySQLContainerCommand;
+import com.sviattech.preinittestcontainers.mysql.MySQLContainerFactory;
 import org.testcontainers.mysql.MySQLContainer;
 
 import java.util.List;
@@ -183,17 +185,17 @@ try (MySQLContainer container = MySQLContainerFactory.createMySQLContainer(comma
 
 ### Generic container (MongoDB)
 
-Use the core [`preinit-testcontainers`](core/) artifact with [`GenericContainerFactory.createGenericContainer()`](core/src/main/java/by/macmonitor/preinittestcontainers/GenericContainerFactory.java) for images without a bundled module:
+Use the core [`preinit-testcontainers`](core/) artifact with [`GenericContainerFactory.createGenericContainer()`](core/src/main/java/com/sviattech/preinittestcontainers/GenericContainerFactory.java) for images without a bundled module:
 
 ```groovy
-testImplementation "by.macmonitor:preinit-testcontainers:2.0.0-SNAPSHOT"
+testImplementation "com.sviat-tech:preinit-testcontainers:2.0.0-SNAPSHOT"
 testImplementation "org.testcontainers:testcontainers-junit-jupiter"
 ```
 
 ```java
-import by.macmonitor.preinittestcontainers.CreateGenericContainerCommand;
-import by.macmonitor.preinittestcontainers.GenericContainerFactory;
-import by.macmonitor.preinittestcontainers.PreInitStartCallback;
+import com.sviattech.preinittestcontainers.CreateGenericContainerCommand;
+import com.sviattech.preinittestcontainers.GenericContainerFactory;
+import com.sviattech.preinittestcontainers.PreInitStartCallback;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -221,7 +223,7 @@ try (GenericContainer<?> container = GenericContainerFactory.createGenericContai
 
 - **Single-test runs:** Preinit is especially helpful when you run one test (e.g. from your IDE) — container startup often dominates runtime, and preinit reduces `start()` time significantly once the end image exists (see [Performance](#performance)).
 - **First-run cost:** The initial start builds and commits the end image. Steady-state `start()` times match the [Performance](#performance) "Preinit" rows.
-- **Parallel CI:** Cross-process locking via [`ImageCreationLockService`](core/src/main/java/by/macmonitor/preinittestcontainers/ImageCreationLockService.java) is built-in; tune via [`ImageCreationLockOption`](core/src/main/java/by/macmonitor/preinittestcontainers/ImageCreationLockOption.java) if needed (see [Extension points](#extension-points)).
+- **Parallel CI:** Cross-process locking via [`ImageCreationLockService`](core/src/main/java/com/sviattech/preinittestcontainers/ImageCreationLockService.java) is built-in; tune via [`ImageCreationLockOption`](core/src/main/java/com/sviattech/preinittestcontainers/ImageCreationLockOption.java) if needed (see [Extension points](#extension-points)).
 - **Disable pre-init:** `.withPreInitialized(false)` for stock Testcontainers behavior.
 - **Spring Boot:** See [examples/spring-boot-mysql](examples/spring-boot-mysql) (BOM import, exclude Testcontainers from `spring-boot-starter-test`).
 - **Building from source:** `./gradlew build` (Java 21 toolchain for dev; published JAR is Java 8).
@@ -260,7 +262,7 @@ The following sections describe what happens under `create*Container()` — usef
 
 This is upstream Docker image invocation data — not Maven or project metadata.
 
-The value type is [`ContainerMetadata`](core/src/main/java/by/macmonitor/preinittestcontainers/ContainerMetadata.java): `entrypoint`, `entrypointPath`, `cmd`, and `volumes`. [`getTmpFs()`](core/src/main/java/by/macmonitor/preinittestcontainers/ContainerMetadata.java) derives default tmpfs mounts from `volumes` (e.g. `/var/lib/mysql` for MySQL).
+The value type is [`ContainerMetadata`](core/src/main/java/com/sviattech/preinittestcontainers/ContainerMetadata.java): `entrypoint`, `entrypointPath`, `cmd`, and `volumes`. [`getTmpFs()`](core/src/main/java/com/sviattech/preinittestcontainers/ContainerMetadata.java) derives default tmpfs mounts from `volumes` (e.g. `/var/lib/mysql` for MySQL).
 
 #### Bundled files
 
@@ -277,11 +279,11 @@ record.0.volumes=/var/lib/mysql
 
 #### Resolution order
 
-[`GenericContainerFactory.resolveMetadata`](core/src/main/java/by/macmonitor/preinittestcontainers/GenericContainerFactory.java) picks metadata in this order:
+[`GenericContainerFactory.resolveMetadata`](core/src/main/java/com/sviattech/preinittestcontainers/GenericContainerFactory.java) picks metadata in this order:
 
-1. Explicit [`withMetadata(...)`](core/src/main/java/by/macmonitor/preinittestcontainers/CreateContainerCommandBuilder.java) on the command
-2. [`ContainerMetadataRegistry.find`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/ContainerMetadataRegistry.java) — default [`FileBasedContainerMetadataRegistry`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/FileBasedContainerMetadataRegistry.java) loads bundled `.metadata` files
-3. [`DockerImageMetadataInspector.inspect`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/DockerImageMetadataInspector.java) — live `docker inspect` when no bundled file matches
+1. Explicit [`withMetadata(...)`](core/src/main/java/com/sviattech/preinittestcontainers/CreateContainerCommandBuilder.java) on the command
+2. [`ContainerMetadataRegistry.find`](core/src/main/java/com/sviattech/preinittestcontainers/metadata/ContainerMetadataRegistry.java) — default [`FileBasedContainerMetadataRegistry`](core/src/main/java/com/sviattech/preinittestcontainers/metadata/FileBasedContainerMetadataRegistry.java) loads bundled `.metadata` files
+3. [`DockerImageMetadataInspector.inspect`](core/src/main/java/com/sviattech/preinittestcontainers/metadata/DockerImageMetadataInspector.java) — live `docker inspect` when no bundled file matches
 
 ```mermaid
 flowchart TD
@@ -296,24 +298,24 @@ flowchart TD
     meta --> wrap["Wrap entrypoint<br/>+ tmpfs"]
 ```
 
-Version matching ([`MetadataFile.resolve`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/MetadataFile.java)): `latest` or empty tag → highest `endVersion` record; in-range tag → matching record; tag newer than max → max record; tag older than min → inspect fallback.
+Version matching ([`MetadataFile.resolve`](core/src/main/java/com/sviattech/preinittestcontainers/metadata/MetadataFile.java)): `latest` or empty tag → highest `endVersion` record; in-range tag → matching record; tag newer than max → max record; tag older than min → inspect fallback.
 
 #### Override
 
-For custom or unsupported images without a bundled `.metadata` file, set metadata explicitly via [`CreateContainerCommandBuilder.withMetadata`](core/src/main/java/by/macmonitor/preinittestcontainers/CreateContainerCommandBuilder.java).
+For custom or unsupported images without a bundled `.metadata` file, set metadata explicitly via [`CreateContainerCommandBuilder.withMetadata`](core/src/main/java/com/sviattech/preinittestcontainers/CreateContainerCommandBuilder.java).
 
 ### End image naming
 
 The committed local image name is **deterministic** so identical configuration reuses the cache. Any input that changes image contents must affect the hash.
 
-Resolution ([`GenericContainerFactory.createPreinitialized`](core/src/main/java/by/macmonitor/preinittestcontainers/GenericContainerFactory.java)):
+Resolution ([`GenericContainerFactory.createPreinitialized`](core/src/main/java/com/sviattech/preinittestcontainers/GenericContainerFactory.java)):
 
-1. Explicit [`withEndImageName(...)`](core/src/main/java/by/macmonitor/preinittestcontainers/CreateContainerCommandBuilder.java) wins
-2. Otherwise [`ContainerEndImageNameCalculator.calculate`](core/src/main/java/by/macmonitor/preinittestcontainers/endimagename/ContainerEndImageNameCalculator.java) — default [`GenericContainerEndImageNameCalculator`](core/src/main/java/by/macmonitor/preinittestcontainers/endimagename/GenericContainerEndImageNameCalculator.java)
+1. Explicit [`withEndImageName(...)`](core/src/main/java/com/sviattech/preinittestcontainers/CreateContainerCommandBuilder.java) wins
+2. Otherwise [`ContainerEndImageNameCalculator.calculate`](core/src/main/java/com/sviattech/preinittestcontainers/endimagename/ContainerEndImageNameCalculator.java) — default [`GenericContainerEndImageNameCalculator`](core/src/main/java/com/sviattech/preinittestcontainers/endimagename/GenericContainerEndImageNameCalculator.java)
 
 #### Default hash algorithm
 
-**String inputs** (in order): `cmdParameters`, environment variables (`key=value`, keys sorted), `privileged=...`, `callback.uniqueKey()` when a [`PreInitStartCallback`](core/src/main/java/by/macmonitor/preinittestcontainers/PreInitStartCallback.java) is set.
+**String inputs** (in order): `cmdParameters`, environment variables (`key=value`, keys sorted), `privileged=...`, `callback.uniqueKey()` when a [`PreInitStartCallback`](core/src/main/java/com/sviattech/preinittestcontainers/PreInitStartCallback.java) is set.
 
 **File inputs** (in order): [`docker/testcontainer-entrypoint.sh`](core/src/main/resources/docker/testcontainer-entrypoint.sh), then each `classpathResourceMapping` path — for each path, hash path bytes plus raw classpath file bytes.
 
@@ -323,7 +325,7 @@ Resolution ([`GenericContainerFactory.createPreinitialized`](core/src/main/java/
 
 #### JDBC modules
 
-[`JdbcEndImageNameCalculator`](modules/jdbc/src/main/java/by/macmonitor/preinittestcontainers/endimagename/JdbcEndImageNameCalculator.java) extends the default: prefix = `dbName`; extra string hash of `dbName`, `username`, `password`; extra file hash of `initScripts`.
+[`JdbcEndImageNameCalculator`](modules/jdbc/src/main/java/com/sviattech/preinittestcontainers/endimagename/JdbcEndImageNameCalculator.java) extends the default: prefix = `dbName`; extra string hash of `dbName`, `username`, `password`; extra file hash of `initScripts`.
 
 Changing init scripts, env vars, credentials, or classpath mappings produces a new image name. `preInitialized=false` does **not** affect the hash (stock path skips commit).
 
@@ -331,16 +333,16 @@ Changing init scripts, env vars, credentials, or classpath mappings produces a n
 
 | Interface | When to use |
 |-----------|-------------|
-| [`ContainerFactory`](core/src/main/java/by/macmonitor/preinittestcontainers/ContainerFactory.java) | Entry point: `create(command)` |
-| [`CreateContainerCommand`](core/src/main/java/by/macmonitor/preinittestcontainers/CreateContainerCommand.java) | Read-side command contract |
-| [`CreateContainerCommandBuilder`](core/src/main/java/by/macmonitor/preinittestcontainers/CreateContainerCommandBuilder.java) | Fluent builder (`withBaseImageName`, `withMetadata`, `withEndImageName`, …) |
-| [`PreInitStartCallback`](core/src/main/java/by/macmonitor/preinittestcontainers/PreInitStartCallback.java) | Custom init during image build |
-| [`ContainerEndImageNameCalculator`](core/src/main/java/by/macmonitor/preinittestcontainers/endimagename/ContainerEndImageNameCalculator.java) | Custom hashing for new container modules |
-| [`ContainerMetadataRegistry`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/ContainerMetadataRegistry.java) | Custom metadata lookup |
-| [`DockerImageMetadataInspector`](core/src/main/java/by/macmonitor/preinittestcontainers/metadata/DockerImageMetadataInspector.java) | Replace live Docker inspect fallback |
-| [`ImageCreationLockService`](core/src/main/java/by/macmonitor/preinittestcontainers/ImageCreationLockService.java) | Customize cross-process build locking |
+| [`ContainerFactory`](core/src/main/java/com/sviattech/preinittestcontainers/ContainerFactory.java) | Entry point: `create(command)` |
+| [`CreateContainerCommand`](core/src/main/java/com/sviattech/preinittestcontainers/CreateContainerCommand.java) | Read-side command contract |
+| [`CreateContainerCommandBuilder`](core/src/main/java/com/sviattech/preinittestcontainers/CreateContainerCommandBuilder.java) | Fluent builder (`withBaseImageName`, `withMetadata`, `withEndImageName`, …) |
+| [`PreInitStartCallback`](core/src/main/java/com/sviattech/preinittestcontainers/PreInitStartCallback.java) | Custom init during image build |
+| [`ContainerEndImageNameCalculator`](core/src/main/java/com/sviattech/preinittestcontainers/endimagename/ContainerEndImageNameCalculator.java) | Custom hashing for new container modules |
+| [`ContainerMetadataRegistry`](core/src/main/java/com/sviattech/preinittestcontainers/metadata/ContainerMetadataRegistry.java) | Custom metadata lookup |
+| [`DockerImageMetadataInspector`](core/src/main/java/com/sviattech/preinittestcontainers/metadata/DockerImageMetadataInspector.java) | Replace live Docker inspect fallback |
+| [`ImageCreationLockService`](core/src/main/java/com/sviattech/preinittestcontainers/ImageCreationLockService.java) | Customize cross-process build locking |
 
-Module extension is typically done by subclassing [`GenericContainerFactory`](core/src/main/java/by/macmonitor/preinittestcontainers/GenericContainerFactory.java) and [`GenericContainerEndImageNameCalculator`](core/src/main/java/by/macmonitor/preinittestcontainers/endimagename/GenericContainerEndImageNameCalculator.java) rather than adding new interfaces under `modules/`. For image metadata details, see [Image metadata](#image-metadata).
+Module extension is typically done by subclassing [`GenericContainerFactory`](core/src/main/java/com/sviattech/preinittestcontainers/GenericContainerFactory.java) and [`GenericContainerEndImageNameCalculator`](core/src/main/java/com/sviattech/preinittestcontainers/endimagename/GenericContainerEndImageNameCalculator.java) rather than adding new interfaces under `modules/`. For image metadata details, see [Image metadata](#image-metadata).
 
 ## Examples
 

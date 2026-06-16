@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.spotless)
 }
 
-group = 'by.macmonitor'
+group = 'com.sviat-tech'
 
 def publishableSubprojects = subprojects.findAll { it.name.startsWith('preinit-testcontainers') }
 
