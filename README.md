@@ -88,6 +88,8 @@ Artifacts are published to Maven Central. Use **`test`** / **`testImplementation
 
 Each DB module pulls its Testcontainers counterpart transitively via `api`.
 
+Import the Testcontainers BOM once, then add one module below (plus `testcontainers-junit-jupiter` and `junit-jupiter` for every example).
+
 ### Maven
 
 ```xml
@@ -102,16 +104,65 @@ Each DB module pulls its Testcontainers counterpart transitively via `api`.
     </dependency>
   </dependencies>
 </dependencyManagement>
+```
 
+#### `preinit-testcontainers`
+
+```xml
 <dependencies>
-  <!-- Pick one preinit module (see Modules table above) -->
+  <dependency>
+    <groupId>com.sviat-tech</groupId>
+    <artifactId>preinit-testcontainers</artifactId>
+    <version>2.0.0</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>testcontainers-junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+</dependencies>
+```
+
+#### `preinit-testcontainers-jdbc`
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.sviat-tech</groupId>
+    <artifactId>preinit-testcontainers-jdbc</artifactId>
+    <version>2.0.0</version>
+    <scope>test</scope>
+  </dependency>
+  <!-- your JDBC driver -->
+  <dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>testcontainers-junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+</dependencies>
+```
+
+#### `preinit-testcontainers-mysql`
+
+```xml
+<dependencies>
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-mysql</artifactId>
     <version>2.0.0</version>
     <scope>test</scope>
   </dependency>
-  <!-- JDBC driver for the DB module (test scope) -->
   <dependency>
     <groupId>com.mysql</groupId>
     <artifactId>mysql-connector-j</artifactId>
@@ -131,7 +182,90 @@ Each DB module pulls its Testcontainers counterpart transitively via `api`.
 </dependencies>
 ```
 
+#### `preinit-testcontainers-postgresql`
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.sviat-tech</groupId>
+    <artifactId>preinit-testcontainers-postgresql</artifactId>
+    <version>2.0.0</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.7.5</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>testcontainers-junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+</dependencies>
+```
+
+#### `preinit-testcontainers-clickhouse`
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.sviat-tech</groupId>
+    <artifactId>preinit-testcontainers-clickhouse</artifactId>
+    <version>2.0.0</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>com.clickhouse</groupId>
+    <artifactId>clickhouse-jdbc</artifactId>
+    <version>0.9.8</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>testcontainers-junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+</dependencies>
+```
+
+#### `preinit-testcontainers-redis`
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.sviat-tech</groupId>
+    <artifactId>preinit-testcontainers-redis</artifactId>
+    <version>2.0.0</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>testcontainers-junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+</dependencies>
+```
+
 ### Gradle
+
+#### `preinit-testcontainers`
 
 ```groovy
 repositories {
@@ -140,9 +274,86 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    // Pick one preinit module (see Modules table above)
+    testImplementation "com.sviat-tech:preinit-testcontainers:2.0.0"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+}
+```
+
+#### `preinit-testcontainers-jdbc`
+
+```groovy
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
+    testImplementation "com.sviat-tech:preinit-testcontainers-jdbc:2.0.0"
+    // your JDBC driver
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+}
+```
+
+#### `preinit-testcontainers-mysql`
+
+```groovy
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
     testImplementation "com.sviat-tech:preinit-testcontainers-mysql:2.0.0"
     testImplementation "com.mysql:mysql-connector-j:9.6.0"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+}
+```
+
+#### `preinit-testcontainers-postgresql`
+
+```groovy
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
+    testImplementation "com.sviat-tech:preinit-testcontainers-postgresql:2.0.0"
+    testImplementation "org.postgresql:postgresql:42.7.5"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+}
+```
+
+#### `preinit-testcontainers-clickhouse`
+
+```groovy
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
+    testImplementation "com.sviat-tech:preinit-testcontainers-clickhouse:2.0.0"
+    testImplementation "com.clickhouse:clickhouse-jdbc:0.9.8"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+}
+```
+
+#### `preinit-testcontainers-redis`
+
+```groovy
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
+    testImplementation "com.sviat-tech:preinit-testcontainers-redis:2.0.0"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
 }
