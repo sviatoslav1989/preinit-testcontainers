@@ -1,5 +1,5 @@
 description = 'example :: preinit-testcontainers (Maven Central consumer)'
 
 dependencies {
-	implementation "by.macmonitor:preinit-testcontainers:${rootProject.version}"
+	implementation "com.sviat-tech:preinit-testcontainers:${rootProject.version}"
 }
