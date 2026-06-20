@@ -1,0 +1,6 @@
+record.0.startVersion=10.5
+record.0.endVersion=13.0
+record.0.entrypointPath=/usr/local/bin/docker-entrypoint.sh
+record.0.entrypoint=docker-entrypoint.sh
+record.0.cmd=mariadbd
+record.0.volumes=/var/lib/mysql

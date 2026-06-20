@@ -1,0 +1,7 @@
+description = 'example :: preinit-testcontainers-mariadb (Maven Central consumer)'
+
+dependencies {
+	implementation "com.sviat-tech:preinit-testcontainers-mariadb:${rootProject.version}"
+
+	testImplementation libs.mariadb.java.client
+}

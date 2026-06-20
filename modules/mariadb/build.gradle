@@ -1,0 +1,13 @@
+plugins {
+	id 'preinit.testcontainers.java-library'
+	id 'preinit.testcontainers.publishing'
+}
+
+description = 'preinit-testcontainers :: MariaDB'
+
+dependencies {
+	api project(':preinit-testcontainers-jdbc')
+	configureTestcontainersApi(delegate, 'org.testcontainers:testcontainers-mariadb')
+
+	testImplementation libs.mariadb.java.client
+}

@@ -71,7 +71,7 @@ sequenceDiagram
 
 ## Installation
 
-Coordinates: `com.sviat-tech` / `<version>` (any dotted release, e.g. `2.0`, `2.0.0`, `2.0.0.1`).
+Coordinates: `com.sviat-tech` / `<version>` (any dotted release, e.g. `2.0`, `2.0.1`, `2.0.1.0`).
 
 Artifacts are published to Maven Central. Use **`test`** / **`testImplementation`** scope in normal apps (`src/main` + `src/test`). The [examples](examples/) use `implementation` only because those modules are test-only sample projects.
 
@@ -82,6 +82,7 @@ Artifacts are published to Maven Central. Use **`test`** / **`testImplementation
 | `preinit-testcontainers` | Generic images / custom containers | — |
 | `preinit-testcontainers-jdbc` | Custom JDBC-backed modules | your JDBC driver |
 | `preinit-testcontainers-mysql` | MySQL (`testcontainers-mysql`) | `com.mysql:mysql-connector-j:9.6.0` |
+| `preinit-testcontainers-mariadb` | MariaDB (`testcontainers-mariadb`) | `org.mariadb.jdbc:mariadb-java-client:3.5.3` |
 | `preinit-testcontainers-postgresql` | PostgreSQL | `org.postgresql:postgresql:42.7.5` |
 | `preinit-testcontainers-clickhouse` | ClickHouse | `com.clickhouse:clickhouse-jdbc:0.9.8` |
 | `preinit-testcontainers-redis` | Redis (`com.redis:testcontainers-redis`) | — |
@@ -113,7 +114,7 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -136,7 +137,7 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-jdbc</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <!-- your JDBC driver -->
@@ -160,13 +161,42 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-mysql</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <dependency>
     <groupId>com.mysql</groupId>
     <artifactId>mysql-connector-j</artifactId>
     <version>9.6.0</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>testcontainers-junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <scope>test</scope>
+  </dependency>
+</dependencies>
+```
+
+#### `preinit-testcontainers-mariadb`
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.sviat-tech</groupId>
+    <artifactId>preinit-testcontainers-mariadb</artifactId>
+    <version>2.0.1</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.mariadb.jdbc</groupId>
+    <artifactId>mariadb-java-client</artifactId>
+    <version>3.5.3</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -189,7 +219,7 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-postgresql</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -218,7 +248,7 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-clickhouse</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -247,7 +277,7 @@ Import the Testcontainers BOM once, then add one module below (plus `testcontain
   <dependency>
     <groupId>com.sviat-tech</groupId>
     <artifactId>preinit-testcontainers-redis</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -274,7 +304,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers:2.0.1"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
 }
@@ -289,7 +319,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers-jdbc:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers-jdbc:2.0.1"
     // your JDBC driver
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -305,8 +335,24 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers-mysql:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers-mysql:2.0.1"
     testImplementation "com.mysql:mysql-connector-j:9.6.0"
+    testImplementation "org.testcontainers:testcontainers-junit-jupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+}
+```
+
+#### `preinit-testcontainers-mariadb`
+
+```groovy
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
+    testImplementation "com.sviat-tech:preinit-testcontainers-mariadb:2.0.1"
+    testImplementation "org.mariadb.jdbc:mariadb-java-client:3.5.3"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
 }
@@ -321,7 +367,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers-postgresql:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers-postgresql:2.0.1"
     testImplementation "org.postgresql:postgresql:42.7.5"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -337,7 +383,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers-clickhouse:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers-clickhouse:2.0.1"
     testImplementation "com.clickhouse:clickhouse-jdbc:0.9.8"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -353,7 +399,7 @@ repositories {
 
 dependencies {
     testImplementation platform("org.testcontainers:testcontainers-bom:2.0.4")
-    testImplementation "com.sviat-tech:preinit-testcontainers-redis:2.0.0"
+    testImplementation "com.sviat-tech:preinit-testcontainers-redis:2.0.1"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.junit.jupiter:junit-jupiter"
 }
@@ -399,7 +445,7 @@ try (MySQLContainer container = MySQLContainerFactory.createMySQLContainer(comma
 Use the core [`preinit-testcontainers`](core/) artifact with [`GenericContainerFactory.createGenericContainer()`](core/src/main/java/com/sviattech/preinittestcontainers/GenericContainerFactory.java) for images without a bundled module:
 
 ```groovy
-testImplementation "com.sviat-tech:preinit-testcontainers:2.0.0-SNAPSHOT"
+testImplementation "com.sviat-tech:preinit-testcontainers:2.0.1-SNAPSHOT"
 testImplementation "org.testcontainers:testcontainers-junit-jupiter"
 ```
 
@@ -445,19 +491,19 @@ Startup time for `container.start()` until ready (measured by `TimedContainerSta
 
 All scenarios use **tmpfs on the DB data directory**, comparing vanilla Testcontainers (init at startup) vs preinit (pre-baked init + tmpfs restore).
 
-| Scenario | MySQL | PostgreSQL | ClickHouse |
-|----------|------:|-----------:|-----------:|
-| Vanilla + tmpfs, 100 tables | 13,613 | 3,663 | 14,256 |
-| **Preinit + tmpfs, 100 tables** | **1,389** | **551** | **3,403** |
-| Vanilla + tmpfs, empty | 8,593 | 1,325 | 5,576 |
-| **Preinit + tmpfs, empty** | **1,445** | **451** | **2,388** |
+| Scenario | MySQL | MariaDB | PostgreSQL | ClickHouse |
+|----------|------:|--------:|-----------:|-----------:|
+| Vanilla + tmpfs, 100 tables | 13,613 | 8,515 | 3,663 | 14,256 |
+| **Preinit + tmpfs, 100 tables** | **1,389** | **1,952** | **551** | **3,403** |
+| Vanilla + tmpfs, empty | 8,593 | 5,299 | 1,325 | 5,576 |
+| **Preinit + tmpfs, empty** | **1,445** | **2,088** | **451** | **2,388** |
 
-Images: `mysql:8.0.45` (`/var/lib/mysql`), `postgres:17` (`/var/lib/postgresql/data`), `clickhouse/clickhouse-server:26.3.4.11` (`/var/lib/clickhouse`).
+Images: `mysql:8.0.45` (`/var/lib/mysql`), `mariadb:12.2` (`/var/lib/mysql`), `postgres:17` (`/var/lib/postgresql/data`), `clickhouse/clickhouse-server:26.3.4.11` (`/var/lib/clickhouse`).
 
 **Speedups (preinit vs vanilla + tmpfs):**
 
-- **100 tables:** ~10× MySQL, ~7× PostgreSQL, ~4× ClickHouse.
-- **Empty:** ~6× MySQL, ~3× PostgreSQL, ~2× ClickHouse.
+- **100 tables:** ~10× MySQL, ~4× MariaDB, ~7× PostgreSQL, ~4× ClickHouse.
+- **Empty:** ~6× MySQL, ~2.5× MariaDB, ~3× PostgreSQL, ~2× ClickHouse.
 
 Init-heavy workloads show the largest gains; empty DB still benefits from pre-baked image + tmpfs restore.
 
@@ -562,6 +608,7 @@ Runnable examples live under [examples/](examples/). From that directory:
 ```bash
 ./gradlew :example-preinit-testcontainers:test
 ./gradlew :example-preinit-testcontainers-mysql:test
+./gradlew :example-preinit-testcontainers-mariadb:test
 ```
 
 ## License

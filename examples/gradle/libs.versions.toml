@@ -5,6 +5,7 @@ testcontainersBom = "1.21.4"
 lombok = "1.18.44"
 junitBom = "5.14.3"
 mysqlConnector = "9.6.0"
+mariadbJavaClient = "3.5.3"
 postgresqlJdbc = "42.7.5"
 clickhouseJdbc = "0.9.8"
 slf4j = "2.0.17"
@@ -21,5 +22,6 @@ testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainersBom" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }
 mysql-connector-j = { module = "com.mysql:mysql-connector-j", version.ref = "mysqlConnector" }
+mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadbJavaClient" }
 postgresql-jdbc = { module = "org.postgresql:postgresql", version.ref = "postgresqlJdbc" }
 clickhouse-jdbc = { module = "com.clickhouse:clickhouse-jdbc", version.ref = "clickhouseJdbc" }
